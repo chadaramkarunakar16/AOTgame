@@ -481,10 +481,6 @@ function districtColumn(bl, base, x, z, h) {
       if (hash3(x, y, z, 86) < 0.06) rBlk = B.COBBLE;
       bl[(y << 8) | base] = rBlk;
     }
-    // High crenellations on Wall Rose Walkway
-    if (((x + z) & 1) === 0) {
-      bl[((roseTopY + 1) << 8) | base] = B.STONEBRICK;
-    }
     return;
   }
 
@@ -529,12 +525,6 @@ function districtColumn(bl, base, x, z, h) {
       if (hash3(x, y, z, 82) < 0.08) blk = B.COBBLE;
       else if (hash3(x, y, z, 83) < 0.04) blk = B.MOSSY;
       bl[(y << 8) | base] = blk;
-    }
-    // Walkway parapet & crenellations on top
-    var dWalk = Math.sqrt(x * x + (z - CURVE_CZ) * (z - CURVE_CZ));
-    var isRampartEdge = (dWalk <= CURVE_R - WALL_T + 1) || (dWalk >= CURVE_R - 1) || Math.abs(z - INNER_Z) <= 1;
-    if (isRampartEdge && ((x + z) & 1) === 0) {
-      bl[((wallTopY + 1) << 8) | base] = B.STONEBRICK;
     }
     return;
   }

@@ -157,8 +157,7 @@ export const Missions = {
         this.api = api;
         markers.clear();
         clearHorses();
-        const P = G.player;
-        spawnHorse(P.pos.x - 3, P.pos.z, { yaw: P.yaw, y: P.pos.y });
+        spawnHorse(0, -38, { yaw: 0, y: GROUND + 1 });
 
         api.setObjective('Chapter I · The Silent District', 'Eliminate 6 roaming Titans and secure the Outer Gate');
         api.say('Commander Erwin: <i>"Scouts — Shiganshina is quiet, but aggressive Titans roam the canal banks and avenue. <b>Ride on horseback [H]</b>, eliminate 6 roaming Titans, and secure our forward camp at the gate."</i>', 9);
@@ -237,9 +236,7 @@ export const Missions = {
       start(api) {
         this.api = api;
         markers.clear();
-        clearHorses();
-        const P = G.player;
-        spawnHorse(P.pos.x - 3, P.pos.z, { yaw: P.yaw, y: P.pos.y });
+        spawnHorse(0, -38, { yaw: 0, y: GROUND + 1 });
 
         api.setObjective('Chapter II · The Iron Fortress', 'Defeat the Armored Titan (Reiner)');
         const b = this.boss = api.spawnTitan('armored', 0, 22, {
@@ -297,9 +294,7 @@ export const Missions = {
       start(api) {
         this.api = api;
         markers.clear();
-        clearHorses();
-        const P = G.player;
-        spawnHorse(P.pos.x - 3, P.pos.z, { yaw: P.yaw, y: P.pos.y });
+        spawnHorse(0, -38, { yaw: 0, y: GROUND + 1 });
 
         api.setObjective('Chapter III · The God of Destruction', 'Defeat the 34m Colossal Titan atop Wall Maria');
         const b = this.boss = api.spawnTitan('colossal', 0, DR - 4, {
@@ -376,9 +371,7 @@ export const Missions = {
       start(api) {
         this.api = api;
         markers.clear();
-        clearHorses();
-        const P = G.player;
-        spawnHorse(P.pos.x - 3, P.pos.z, { yaw: P.yaw, y: P.pos.y });
+        spawnHorse(0, -38, { yaw: 0, y: GROUND + 1 });
 
         api.setObjective('Chapter IV · The Final Charge', 'Survive supersonic boulder artillery and defeat the Beast Titan (Zeke)');
         const b = this.boss = api.spawnTitan('beast', 0, 42, {
@@ -458,9 +451,7 @@ export const Missions = {
       start(api) {
         this.api = api;
         markers.clear();
-        clearHorses();
-        const P = G.player;
-        spawnHorse(P.pos.x - 3, P.pos.z, { yaw: P.yaw, y: P.pos.y });
+        spawnHorse(0, -38, { yaw: 0, y: GROUND + 1 });
 
         api.setObjective('Chapter V · The Last Stand', 'Defeat both the Armored Titan & Beast Titan to seal Wall Maria');
         const arm = this.bossArmored = api.spawnTitan('armored', 0, 18, {
@@ -535,15 +526,13 @@ export const Missions = {
         this.api = api;
         markers.clear();
         clearHorses();
-        const P = G.player;
-        // Spawn military horse right beside trainee
-        spawnHorse(P.pos.x - 3, P.pos.z, { yaw: P.yaw, y: P.pos.y });
+        spawnHorse(-48, -28, { yaw: 0, y: GROUND + 1 });
 
         this.dummy = api.spawnTitan('dummy', -44, -34, { yaw: -0.12, passive: true });
         this.mkDummy = markers.add(V(-44, GROUND + 7, -34), 'TRAINING NAPE', 'danger edge');
 
         api.setObjective('Practice Ground', 'Train Cavalry, 3DMG & Titan Shifter Combat');
-        api.say('Commander Erwin: <i>"Welcome to the Scout Practice Ground, cadet. Your <b>military horse</b> is by your side — press <b>[H]</b> to whistle or mount. Practice aerial grappling on the tether poles, slash the training mannequin\'s nape (F), or press <b>[T]</b> to test your Titan Shifter transformation."</i>', 12);
+        api.say('Commander Erwin: <i>"Welcome to the Scout Practice Ground, cadet. Your <b>military horse</b> is by your side on the field — press <b>[H]</b> to whistle or mount. Practice aerial grappling on the tether poles, slash the training mannequin\'s nape (F), or press <b>[T]</b> to test your Titan Shifter transformation."</i>', 12);
         api.setProgress('Ride horse [H] · Grapple poles · Slash dummy nape (F) · Transform [T]');
       },
       onNapeHit(t) {
@@ -579,8 +568,7 @@ export const Missions = {
         this.api = api;
         markers.clear();
         clearHorses();
-        const P = G.player;
-        spawnHorse(P.pos.x - 3, P.pos.z, { yaw: P.yaw, y: P.pos.y });
+        spawnHorse(0, -38, { yaw: 0, y: GROUND + 1 });
 
         api.setObjective('Scout Expedition', 'Endless battle across Shiganshina & outer plains');
         api.say('Captain Levi: <i>"The expedition is underway. Ride across the canal avenues and outer scorched plains. Whistle your horse anytime with <b>[H]</b>, or transform into a Titan with <b>[T]</b>. Slay every Titan in sight."</i>', 10);
