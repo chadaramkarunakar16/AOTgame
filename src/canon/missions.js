@@ -540,9 +540,7 @@ export const Missions = {
         this.api = api;
         markers.clear();
         clearHorses();
-        const P = G.player;
-        // Spawn military horse right beside trainee
-        spawnHorse(P.pos.x - 3, P.pos.z, { yaw: P.yaw, y: P.pos.y });
+        spawnHorse(-48, -28, { yaw: 0, y: GROUND + 1 });
 
         this.dummy = api.spawnTitan('dummy', -44, -58, { yaw: -0.12, passive: true });
         this.mkDummy = markers.add(V(-44, GROUND + 7, -58), 'TRAINING NAPE', 'danger edge');
