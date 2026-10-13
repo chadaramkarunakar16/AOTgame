@@ -415,16 +415,16 @@ export function spawnHorse(x, z, opts = {}) {
   if (activeHorse) {
     activeHorse.remove();
   }
-  // Ensure horse spawns in free open space at bottom ground level, never on high walls!
+  // Ensure horse spawns in free open space, never embedded inside a wall or obstacle!
   const isSolid = (px, py, pz) => SOLID && SOLID[getBlock(Math.floor(px), Math.floor(py), Math.floor(pz))];
-  const gh = groundH(x, z);
-  let surfaceY = (opts.y !== undefined && opts.y <= 60) ? opts.y : gh;
+  const reqY = opts.y !== undefined ? opts.y : 120;
+  let surfaceY = getSurfaceY(x, z, reqY);
   let safeX = x, safeZ = z;
   if (isSolid(safeX, surfaceY, safeZ)) {
     for (let rad = 1; rad <= 6; rad++) {
       let found = false;
       for (const [ox, oz] of [[rad, 0], [-rad, 0], [0, rad], [0, -rad]]) {
-        const sy = groundH(x + ox, z + oz);
+        const sy = getSurfaceY(x + ox, z + oz, reqY);
         if (!isSolid(x + ox, sy, z + oz)) {
           safeX = x + ox; safeZ = z + oz; surfaceY = sy; found = true; break;
         }
@@ -466,23 +466,15 @@ export function whistleHorse(P) {
     return;
   }
 
-  const onHighWall = P.pos.y > 60;
   const fwd = -Math.sin(P.yaw), fzd = -Math.cos(P.yaw);
   const rightX = Math.cos(P.yaw), rightZ = -Math.sin(P.yaw);
-  let targetX, targetZ;
-  if (onHighWall) {
-    targetX = 0;
-    targetZ = -38;
-  } else {
-    targetX = P.pos.x + rightX * 2.2 + fwd * 1.5;
-    targetZ = P.pos.z + rightZ * 2.2 + fzd * 1.5;
-  }
-  const surfaceY = groundH(targetX, targetZ);
+  const targetX = P.pos.x + rightX * 2.2 + fwd * 1.5;
+  const targetZ = P.pos.z + rightZ * 2.2 + fzd * 1.5;
+  const surfaceY = getSurfaceY(targetX, targetZ, P.pos.y);
 
   if (!activeHorse) {
     activeHorse = spawnHorse(targetX, targetZ, { yaw: P.yaw, y: surfaceY });
     activeHorse.pos.y = surfaceY;
-    if (window.toast) window.toast(onHighWall ? 'Military steed waiting at the base of the wall!' : 'Military steed whistled to your side!', 2.0);
     return;
   }
 
@@ -490,7 +482,6 @@ export function whistleHorse(P) {
   activeHorse.vel.set(0, 0, 0);
   activeHorse.yaw = P.yaw;
   activeHorse.onGround = true;
-  if (window.toast) window.toast(onHighWall ? 'Military steed waiting at the base of the wall!' : 'Military steed whistled to your side!', 2.0);
 }
 
 export function clearHorses() {
