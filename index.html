@@ -8,6 +8,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Wall Maria: Reclamation</title>
 <script>try { for (const k of Object.keys(localStorage)) if (k.startsWith('aot_') && localStorage.getItem('ts_' + k.slice(4)) === null) localStorage.setItem('ts_' + k.slice(4), localStorage.getItem(k)); } catch (e) { /* storage blocked */ }</script>
+<script src="/gen.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -107,7 +109,9 @@
   .tc { position: absolute; left: 50%; top: 14px; transform: translateX(-50%); text-align: center; min-width: 520px; }
   #mtitle { font-family: 'Cinzel', serif; font-size: 20px; letter-spacing: 3px; color: var(--gold2); text-shadow: 0 2px 6px #000; }
   #mobj { font-size: 15px; color: #ddd; text-shadow: 0 1px 3px #000; }
+  #mprog { display: inline-block; margin-top: 6px; padding: 5px 16px; background: var(--panel); border: 1px solid rgba(232, 196, 106, 0.35); font-size: 18px; letter-spacing: 0.5px; }
   #minimap { position: absolute; right: 22px; top: 18px; width: 210px; height: 210px; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.6)); pointer-events: auto; cursor: pointer; }
+  #speed { position: absolute; right: 22px; top: 234px; width: 210px; text-align: center; font-size: 18px; color: #cde; text-shadow: 0 1px 3px #000; letter-spacing: 1px; }
   .bl { position: absolute; left: 22px; bottom: 22px; width: 360px; padding: 14px 16px 12px; background: var(--panel); border: 1px solid rgba(232, 196, 106, 0.35); border-left: 4px solid var(--gold); }
   .bar { height: 14px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); margin: 3px 0 9px; position: relative; overflow: hidden; }
   .bar > div { height: 100%; transition: width .15s; }
@@ -703,9 +707,6 @@
   <div class="foot"><div class="fl"><span class="desk">Mouse + keyboard or gamepad</span><span class="tch">Touch controls on · play upright or sideways</span> · Headphones recommended · All art, sound and music generated for this homage</div>
   <div class="legal">Unofficial fan homage. Not affiliated with or endorsed by Kodansha, Hajime Isayama, Mojang or Microsoft. Attack on Titan © Hajime Isayama / Kodansha.</div></div>
 </div>
-  <div class="foot"><div class="fl"><span class="desk">Mouse + keyboard or gamepad</span><span class="tch">Touch controls on · play upright or sideways</span> · Headphones recommended · All art, sound and music generated for this homage</div>
-  <div class="legal">Unofficial fan homage. Not affiliated with or endorsed by Kodansha, Hajime Isayama, Mojang or Microsoft. Attack on Titan © Hajime Isayama / Kodansha.</div></div>
-</div>
 
 <div id="story-select" class="screen">
   <div class="story-box">
@@ -925,8 +926,6 @@
 
 <div id="loading" class="screen"><div style="text-align:center"><div class="loadtxt">PREPARING WALL MARIA</div><div id="loadpct" style="font-size:22px;color:#cbbf9f;margin-top:10px">0%</div></div></div>
 
-<script src="/gen.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script type="module" src="/src/canon/game.js"></script>
 </body>
 </html>

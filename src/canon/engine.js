@@ -1,6 +1,14 @@
 import * as THREE from 'three';
 THREE.ColorManagement.enabled = false;
-const B = window.B, CS = window.CS, CH = window.CH;
+const B = (typeof window !== 'undefined' && window.B) || {
+  AIR: 0, GRASS: 1, DIRT: 2, STONE: 3, SAND: 4, WATER: 5, LOG: 6, LEAVES: 7, PLANKS: 8, COBBLE: 9,
+  GLASS: 10, BRICK: 11, SNOW: 12, COAL: 13, IRON: 14, GOLD: 15, DIAMOND: 16, BEDROCK: 17, CACTUS: 18,
+  SANDSTONE: 19, GRAVEL: 20, SPRUCE_LOG: 21, SPRUCE_LEAVES: 22, TALLGRASS: 23, ROSE: 24, DANDELION: 25,
+  SNOW_BLOCK: 26, ICE: 27,
+  STONEBRICK: 28, PLASTER: 29, TIMBER: 30, ROOF_RED: 31, ROOF_SLATE: 32, CANOPY: 33, CANOPY_LIGHT: 34,
+  BARK: 35, PATH: 36, BANNER: 37, CRATE: 38, MOSSY: 39, HAY: 40, IRONBARS: 41, DIRT_PATH: 42, WINDOW: 43
+};
+const CS = (typeof window !== 'undefined' && window.CS) || 16, CH = (typeof window !== 'undefined' && window.CH) || 128;
 
 /* =========================================================================
    Block definitions
