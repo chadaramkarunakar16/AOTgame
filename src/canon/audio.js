@@ -293,6 +293,10 @@ export const Sfx = {
   horn() { this.brass([62, 69, 74], 0.36, 0.1); },
   fanfare() { this.brass([62, 66, 69, 74, 78, 81], 0.14, 0.08); },
   failSting() { this.brass([62, 61, 58, 50], 0.35, 0.08); },
+  death() {
+    if (!this.ctx) return;
+    this.tone({ freq: 220, end: 55, dur: 1.6, gain: 0.25, type: 'sawtooth', filter: 800, verb: 0.5 });
+  },
   // ---- continuous state ----
   update(dt, s) {
     if (!this.ctx) return;

@@ -880,7 +880,14 @@ function die(reason, killer) {
   if (!P.alive && gameState === 'dead') return;
   P.alive = false; P.deadT = 0; detachAll();
   P.boosting = false; P.braking = false; P.reeling = false;
-  slowT = slowDur = 1.0; Sfx.death(); Music.target = 0.1;
+  slowT = slowDur = 1.0;
+  try {
+    if (Sfx.death) Sfx.death();
+    else if (Sfx.failSting) Sfx.failSting();
+  } catch (e) {
+    console.warn('Audio death sound error:', e);
+  }
+  Music.target = 0.1;
   if (P.grabbedBy) { if (!P.grabbedBy.remote) P.grabbedBy.holding = null; P.grabbedBy = null; $('grab').classList.remove('show'); }
   const k = killer || (G.time - P.lastHurt < 6 ? P.lastAttacker : null);
   if (G.mode === 'mp') { if (G.hooks.localDied) G.hooks.localDied(reason, k); return; }
@@ -1856,9 +1863,11 @@ function showDeath(reason, failed) {
   }
   mpSetTitanMode(null);
   document.body.classList.remove('titanmode');
-  $('deathtitle').textContent = failed ? 'MISSION FAILED' : 'YOU HAVE FALLEN';
+  $('deathtitle').textContent = failed ? 'MISSION FAILED' : 'YOU ARE DEAD';
   $('deathreason').textContent = reason || 'Slain in battle beyond the walls';
-  show('death'); Sfx.failSting(); Music.target = 0.1;
+  show('death');
+  try { if (Sfx.failSting) Sfx.failSting(); } catch (e) { /* audio fallback */ }
+  Music.target = 0.1;
 }
 function pauseGame() {
   if (gameState !== 'play') return;
@@ -2428,6 +2437,8 @@ function frame(now) {
   drawSpeedLines(Math.max(0, Math.min(1, (speed - 20) / 35)) * (P.fp ? 1 : 0.85), flashA, sk);
   if (gameState === 'play' || gameState === 'done' || (mpLive && gameState === 'mpend')) { updateHUD(rawDt); drawMinimap(); if (G.localTitan) pilotHud(G.localTitan, rawDt); }
   // audio
+  let steamAmt = 0;
+  for (const t of G.titans) if (t.state === 'dissolve' && t.pos.distanceTo(P.pos) < 60) steamAmt += 1;
   const isPlaying = gameState === 'play' && P.alive;
   Sfx.update(rawDt, {
     speed: isPlaying ? speed : 0,

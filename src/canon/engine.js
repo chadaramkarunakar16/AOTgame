@@ -416,7 +416,7 @@ function setupWorkers() {
   try {
     const n = Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 4) - 1));
     for (let i = 0; i < n; i++) {
-      const w = new Worker('gen.js');
+      const w = new Worker('/gen.js');
       w.busy = 0;
       w.onmessage = (e) => { w.busy--; pendingGen--; onChunkData(e.data); };
       w.onerror = (e) => {
