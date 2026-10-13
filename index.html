@@ -27,9 +27,7 @@
   .btn.primary { border-left-color: #7dffb0; }
   .btn.small { font-size: 17px; padding: 8px 16px; }
   /* ---------------- title ---------------- */
-  #title { background: url(art/title.jpg) center/cover no-repeat; animation: kb 40s ease-in-out infinite alternate; }
-  @keyframes kb { from { background-size: 104% auto; background-position: 40% 40%; } to { background-size: 116% auto; background-position: 60% 30%; } }
-  @media (max-aspect-ratio: 3/2) { #title { animation: none; background-size: cover; } }
+  #title { background: #060806 url(/art/title.jpg) center/cover no-repeat; }
   @media (max-aspect-ratio: 3/4) { #title { background-position: 64% center; } #title::before { background: linear-gradient(90deg, rgba(5, 8, 6, 0.88) 0%, rgba(5, 8, 6, 0.6) 70%, rgba(5, 8, 6, 0.35) 100%), linear-gradient(0deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0) 30%); } }
   #title::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(5, 8, 6, 0.92) 0%, rgba(5, 8, 6, 0.65) 34%, rgba(0, 0, 0, 0) 62%), linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0) 30%); }
   #title .inner { position: relative; margin: auto auto auto 6vw; width: 460px; }
@@ -40,7 +38,8 @@
   .foot { position: absolute; bottom: 14px; left: 6vw; right: 6vw; font-size: 14px; color: #a99f88; letter-spacing: 1px; }
   .foot .legal { margin-top: 6px; font-size: 11px; letter-spacing: 0.3px; color: #8a826f; max-width: 760px; line-height: 1.4; }
   /* ---------------- missions ---------------- */
-  #missions, #controls { background: radial-gradient(ellipse at center, rgba(16, 22, 16, 0.94), rgba(3, 4, 3, 0.98)); flex-direction: column; align-items: center; justify-content: center; }
+  #missions { background: radial-gradient(ellipse at center, rgba(16, 22, 16, 0.94), rgba(3, 4, 3, 0.98)); flex-direction: column; align-items: center; justify-content: center; }
+  #controls { background: radial-gradient(ellipse at center, rgba(14, 18, 14, 0.97), rgba(4, 6, 4, 0.99)); flex-direction: column; align-items: center; justify-content: flex-start; overflow-y: auto; padding: 28px 18px 48px; }
   h2.sec { font-family: 'Cinzel', serif; font-size: 44px; margin: 0 0 22px; color: #f4ead2; letter-spacing: 4px; }
   #cards { display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; max-width: 1500px; }
   .card { width: 228px; background: rgba(20, 24, 20, 0.92); border: 1px solid var(--line); cursor: pointer; transition: transform .15s, box-shadow .15s; position: relative; padding-bottom: 12px; }
@@ -59,7 +58,7 @@
   #briefsub { color: var(--gold); letter-spacing: 3px; font-size: 15px; text-transform: uppercase; }
   #brieftitle { font-family: 'Cinzel', serif; font-size: 44px; margin: 2px 0 14px; }
   .capt { display: flex; gap: 16px; align-items: flex-start; }
-  .capt .por { width: 84px; height: 84px; flex: none; border: 2px solid var(--gold); background: url(art/captain.jpg) center 20%/cover; border-radius: 3px; }
+  .capt .por { width: 84px; height: 84px; flex: none; border: 2px solid var(--gold); background: url(/art/captain.jpg) center 20%/cover; border-radius: 3px; }
   #brieftext { font-size: 18px; line-height: 1.5; color: #e4dccb; font-family: Georgia, serif; }
   .who { font-size: 13px; color: var(--gold); letter-spacing: 2px; margin-top: 6px; }
   #briefobj { margin: 18px 0 20px; padding-left: 20px; color: #cfe; font-size: 17px; line-height: 1.6; }
@@ -83,9 +82,15 @@
   #donequote { font-family: Georgia, serif; font-style: italic; color: #d8cfb8; margin-bottom: 16px; }
   .loadtxt { font-family: 'Cinzel', serif; font-size: 32px; letter-spacing: 6px; color: #e9dfc4; }
   /* controls */
-  .ctl { display: grid; grid-template-columns: 220px 340px 220px 340px; gap: 10px 18px; font-size: 19px; margin-bottom: 26px; }
-  .ctl .k { text-align: right; color: var(--gold2); font-weight: 600; }
-  .ctl .d { color: #ddd; }
+  .ctl-wrap { width: 100%; max-width: 1160px; display: flex; flex-direction: column; gap: 18px; margin-bottom: 24px; }
+  .ctl-sec { background: rgba(18, 22, 18, 0.92); border: 1px solid var(--line); border-left: 4px solid var(--sec-col, var(--gold)); padding: 18px 24px; border-radius: 2px; box-shadow: 0 4px 18px rgba(0,0,0,0.5); }
+  .ctl-head { font-family: 'Cinzel', serif; font-size: 21px; color: var(--sec-col, var(--gold)); letter-spacing: 2px; margin-bottom: 14px; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 6px; }
+  .ctl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 12px 26px; }
+  .ctl-row { display: flex; align-items: baseline; gap: 12px; font-size: 15px; }
+  .ctl-k { font-family: 'Oswald', sans-serif; font-size: 12px; font-weight: 700; color: #000; background: var(--sec-col, var(--gold)); padding: 2px 8px; border-radius: 3px; min-width: 52px; text-align: center; letter-spacing: 1px; flex-shrink: 0; box-shadow: 0 1px 4px rgba(0,0,0,0.5); text-transform: uppercase; }
+  .ctl-d { color: #dfd7c2; line-height: 1.45; }
+  .ctl-d b { color: #fff; font-weight: 600; }
+  .ctl-desc-tag { font-size: 12px; color: #a09780; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
   /* ---------------- HUD ---------------- */
   #hud { position: fixed; inset: 0; pointer-events: none; z-index: 5; display: none; }
   #hud.show { display: block; }
@@ -155,7 +160,7 @@
   #toast.show { opacity: 1; }
   #dialog { position: absolute; left: 22px; top: 150px; width: 430px; display: flex; gap: 12px; padding: 12px; background: rgba(10, 12, 10, 0.78); border: 1px solid var(--line); border-left: 4px solid var(--gold); opacity: 0; transform: translateX(-20px); transition: all .35s; }
   #dialog.show { opacity: 1; transform: none; }
-  #dialog .por { width: 70px; height: 70px; flex: none; background: url(art/captain.jpg) center 20%/cover; border: 1px solid var(--gold); }
+  #dialog .por { width: 70px; height: 70px; flex: none; background: url(/art/captain.jpg) center 20%/cover; border: 1px solid var(--gold); }
   #dialog .nm { font-size: 13px; color: var(--gold); letter-spacing: 2px; }
   #dlgtext { font-size: 16px; line-height: 1.4; color: #eee; }
   #vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 45%, rgba(190, 20, 10, 0.75) 100%); opacity: 0; }
@@ -671,7 +676,7 @@
   </div>
 </div>
 
-<div id="title" class="screen">
+<div id="title" class="screen show">
   <div class="inner">
     <div class="logo"><span class="a">WALL MARIA</span><span class="b">RECLAMATION</span></div>
     <div class="tag">Beyond the colossal stone walls, the Titans have breached the gate. Ride on horseback, master 3D Maneuver Gear, or transform into the Attack Titan to reclaim humanity's freedom.</div>
@@ -721,40 +726,91 @@
 </div>
 
 <div id="controls" class="screen">
-  <h2 class="sec">Controls</h2>
-  <div class="ctl">
-    <div class="k">Mouse</div><div class="d">Aim · the crosshair shows range</div>
-    <div class="k">Left / Right Mouse</div><div class="d">Fire left / right anchor (hold)</div>
-    <div class="k">W A S D</div><div class="d">Run · steer and pump swings in the air</div>
-    <div class="k">Space</div><div class="d">Gas boost · jump on the ground</div>
-    <div class="k">Shift</div><div class="d">Reel cables in fast · sprint</div>
-    <div class="k">G</div><div class="d">Landing thrusters: brake a fall fast (cheap on gas)</div>
-    <div class="k">F</div><div class="d">Slash · spinning cut at high speed</div>
-    <div class="k">R</div><div class="d">Swap in fresh blades</div>
-    <div class="k">E</div><div class="d">Interact · rescue civilians</div>
-    <div class="k">Tab</div><div class="d">Scoreboard (multiplayer)</div>
-    <div class="k">M</div><div class="d">Music volume: full · half · off</div>
-    <div class="k">F5 or V</div><div class="d">Third / first-person camera</div>
-    <div class="k">Q / C</div><div class="d">Alternate left / right anchor keys</div>
-    <div class="k">Esc</div><div class="d">Pause</div>
-    <div class="k">Gamepad</div><div class="d">LT/RT anchors · A gas · LB reel · X/RB slash</div>
-    <div class="k"></div><div class="d">Y blades · B interact · R3 camera · Start pause</div>
-    <div class="k">Landing</div><div class="d">Hard landings and wall slams hurt. Hold G to brake</div>
+  <h2 class="sec" style="margin-bottom:12px">Game Controls &amp; Settings</h2>
+  <div style="max-width:960px;color:#d8cfb8;font-size:16px;line-height:1.5;text-align:center;margin-bottom:22px">
+    Complete manual for Scout 3DMG Maneuver Gear, Titan Shifter transformation &amp; brawl combat, Cavalry riding, and Tactical Multiplayer.
   </div>
-  <div class="ctl tch-ctl">
-    <div class="k">Left thumb</div><div class="d">Move. Push all the way to sprint</div>
-    <div class="k">Right thumb</div><div class="d">Drag anywhere to look</div>
-    <div class="k">HOOK L / R</div><div class="d">Hold to swing. Each hook picks the best anchor on its side; keep dragging to steer</div>
-    <div class="k">Stick forward</div><div class="d">While hooked: reel in. Pull back to swing on a slack line</div>
-    <div class="k">GAS</div><div class="d">Fly (and jump on the ground). While hooked it reels in at full speed</div>
-    <div class="k">SLASH</div><div class="d">Cut. Near a nape it lunges in; the button glows on STRIKE</div>
-    <div class="k">BLADES</div><div class="d">Fresh blades. Broken blades swap by themselves</div>
-    <div class="k">Landing</div><div class="d">Thrusters fire by themselves before a hard landing, if you have gas</div>
-    <div class="k">Titans</div><div class="d">SWIPE, GRAB, hold GUARD over your nape, JUMP, and Q E R abilities</div>
-    <div class="k">Top right</div><div class="d">Menu, scoreboard, chat and camera view</div>
+
+  <div class="ctl-wrap">
+    <!-- TITAN SHIFTER CONTROLS -->
+    <div class="ctl-sec" style="--sec-col:#ff7a45">
+      <div class="ctl-head">
+        <span>⚔️ Titan Shifter Form (Full Combat &amp; Abilities)</span>
+        <span style="font-size:13px;letter-spacing:1px;color:#ffaa77">九つの巨人 · TITAN FORM</span>
+      </div>
+      <div class="ctl-desc-tag">Available in Titan vs Titan Arena, or anywhere in story/free-roam by pressing [T]</div>
+      <div class="ctl-grid">
+        <div class="ctl-row"><div class="ctl-k">T</div><div class="ctl-d"><b>Transform / Eject:</b> Press [T] to summon lightning &amp; transform into your Titan Shifter. Press [T] again inside Titan to eject with a burst of steam and return to human form.</div></div>
+        <div class="ctl-row"><div class="ctl-k">LMB</div><div class="ctl-d"><b>Heavy Punch &amp; Strike:</b> Multi-hit martial arts fist combo. Staggers enemy Titans and delivers devastating concussive blows.</div></div>
+        <div class="ctl-row"><div class="ctl-k">RMB</div><div class="ctl-d"><b>Grab &amp; Throw:</b> Reach out to grab Titans or Scouts, lift them overhead, and fling them across the battlefield.</div></div>
+        <div class="ctl-row"><div class="ctl-k">SPACE</div><div class="ctl-d"><b>Titan Jump &amp; Leap:</b> High-power hydraulic leap. Scale rooftops, jump across wall gaps, and create shockwaves upon landing.</div></div>
+        <div class="ctl-row"><div class="ctl-k">F</div><div class="ctl-d"><b>Heavy Kick &amp; Ground Smash:</b> High-damage kick that breaks knee armor plates, topples towering Titans, and stomps grounded enemies.</div></div>
+        <div class="ctl-row"><div class="ctl-k">C / CTRL</div><div class="ctl-d"><b>Hardened Nape Guard:</b> Raise hardened crystal hands to cover and shield your nape from fatal strikes.</div></div>
+        <div class="ctl-row"><div class="ctl-k">Q</div><div class="ctl-d"><b>Ability 1 · Crystallization / Hardening:</b> Encase knuckles and armor in hardened crystal to boost strike damage and deflect incoming attacks.</div></div>
+        <div class="ctl-row"><div class="ctl-k">E</div><div class="ctl-d"><b>Ability 2 · Primal War Cry:</b> Release a thunderous sonic roar that stuns nearby enemy Titans and interrupts enemy attacks.</div></div>
+        <div class="ctl-row"><div class="ctl-k">R</div><div class="ctl-d"><b>Ability 3 · Ground Spikes / Wall Breaker:</b> Slam the earth to send piercing crystal spikes forward or execute a cataclysmic ground slam.</div></div>
+        <div class="ctl-row"><div class="ctl-k">W A S D</div><div class="ctl-d"><b>Crippled Roll &amp; Crawl:</b> When knocked down or crippled, move WASD to roll and crawl out of danger.</div></div>
+        <div class="ctl-row"><div class="ctl-k">SPACE / F</div><div class="ctl-d"><b>Instant Kip-Up Recovery:</b> When knocked down, press Space or F to immediately spring back to your feet.</div></div>
+      </div>
+    </div>
+
+    <!-- SCOUT 3DMG CONTROLS -->
+    <div class="ctl-sec" style="--sec-col:#7dffb0">
+      <div class="ctl-head">
+        <span>🕊️ Scout Regiment 3D Maneuver Gear (ODM)</span>
+        <span style="font-size:13px;letter-spacing:1px;color:#a8ffca">立体機動装置 · HUMAN FORM</span>
+      </div>
+      <div class="ctl-desc-tag">High-speed kinetic flight, vector cable grappling, and lethal nape slashes</div>
+      <div class="ctl-grid">
+        <div class="ctl-row"><div class="ctl-k">LMB / RMB</div><div class="ctl-d"><b>Left &amp; Right Anchors:</b> Hold to fire grappling wires. Dual anchoring creates a slingshot effect around buildings.</div></div>
+        <div class="ctl-row"><div class="ctl-k">W A S D</div><div class="ctl-d"><b>Movement &amp; Aerial Steering:</b> Run on the ground; steer swings, lean into turns, and pump kinetic momentum in mid-air.</div></div>
+        <div class="ctl-row"><div class="ctl-k">SPACE</div><div class="ctl-d"><b>Gas Thruster Boost:</b> Fire gas thrusters for sudden explosive acceleration in view direction (jump on the ground).</div></div>
+        <div class="ctl-row"><div class="ctl-k">SHIFT</div><div class="ctl-d"><b>Cable Reel-In / Sprint:</b> Rapidly reel in anchor cables to pull directly toward tether points at maximum velocity.</div></div>
+        <div class="ctl-row"><div class="ctl-k">G</div><div class="ctl-d"><b>Landing Thrusters (Air Brake):</b> Reverse thrusters that instantly kill dangerous vertical fall speed to prevent wall slam damage.</div></div>
+        <div class="ctl-row"><div class="ctl-k">F</div><div class="ctl-d"><b>Blade Strike:</b> Slashes target nape. Speeds above 30 m/s unleash Captain Levi's supersonic spin cut.</div></div>
+        <div class="ctl-row"><div class="ctl-k">R</div><div class="ctl-d"><b>Blade Replacement:</b> Swap dull or broken blades with a fresh sharp set from your scabbard (8 spare sets).</div></div>
+        <div class="ctl-row"><div class="ctl-k">F5 / V</div><div class="ctl-d"><b>Camera Toggle:</b> Switch between 3rd-person cinematic combat camera and immersive 1st-person view.</div></div>
+      </div>
+    </div>
+
+    <!-- MILITARY STEED CONTROLS -->
+    <div class="ctl-sec" style="--sec-col:#ffd36a">
+      <div class="ctl-head">
+        <span>🐎 Military Steed &amp; Cavalry Riding</span>
+        <span style="font-size:13px;letter-spacing:1px;color:#ffe699">騎兵 · CAVALRY REGIMENT</span>
+      </div>
+      <div class="ctl-desc-tag">High-speed ground transport across Shiganshina, Wall ramparts, and outer plains</div>
+      <div class="ctl-grid">
+        <div class="ctl-row"><div class="ctl-k">H</div><div class="ctl-d"><b>Mount / Dismount / Whistle:</b> Press [H] near horse to mount; press [H] while riding to dismount; press [H] from afar to whistle horse to your side.</div></div>
+        <div class="ctl-row"><div class="ctl-k">W A S D</div><div class="ctl-d"><b>Steering &amp; Gallop:</b> Guide your horse forward, backward, and through turns.</div></div>
+        <div class="ctl-row"><div class="ctl-k">SHIFT</div><div class="ctl-d"><b>Cavalry Charge:</b> Accelerate to full gallop speed across plains and avenues.</div></div>
+        <div class="ctl-row"><div class="ctl-k">SPACE</div><div class="ctl-d"><b>Steed Jump:</b> Leap over debris, low fences, and terrain obstacles.</div></div>
+        <div class="ctl-row"><div class="ctl-k">SPACE / F</div><div class="ctl-d"><b>ODM Aerial Dismount:</b> Jump or launch hooks while riding to leap high off the saddle straight into flight.</div></div>
+        <div class="ctl-row"><div class="ctl-k">IMPACT</div><div class="ctl-d"><b>Obstacle Rebound:</b> Galloping into solid structures triggers a physical bounce-back instead of getting stuck.</div></div>
+      </div>
+    </div>
+
+    <!-- MULTIPLAYER & TACTICAL -->
+    <div class="ctl-sec" style="--sec-col:#6ff3ff">
+      <div class="ctl-head">
+        <span>🗺️ Tactical Map, Multiplayer &amp; Settings</span>
+        <span style="font-size:13px;letter-spacing:1px;color:#a8f8ff">戦術 · TACTICAL SYSTEMS</span>
+      </div>
+      <div class="ctl-grid">
+        <div class="ctl-row"><div class="ctl-k">M</div><div class="ctl-d"><b>Tactical Territory Map:</b> Open full real-time interactive map showing Wall Rose, Wall Maria, steed location, and Titans.</div></div>
+        <div class="ctl-row"><div class="ctl-k">V</div><div class="ctl-d"><b>Push-to-Talk Voice Chat:</b> Talk live with squadron friends in multiplayer lobbies.</div></div>
+        <div class="ctl-row"><div class="ctl-k">ENTER / T</div><div class="ctl-d"><b>Squadron Chat:</b> Send live text messages to squadron members.</div></div>
+        <div class="ctl-row"><div class="ctl-k">TAB</div><div class="ctl-d"><b>Scoreboard:</b> Display live scoreboard, titan slays, match scores, and ping.</div></div>
+        <div class="ctl-row"><div class="ctl-k">ESC</div><div class="ctl-d"><b>Pause &amp; Settings:</b> Pause single-player match, resume, or quit to title.</div></div>
+        <div class="ctl-row"><div class="ctl-k">GAMEPAD</div><div class="ctl-d"><b>Full Controller Support:</b> LT/RT hooks · A boost · LB reel · X/RB slash · Y reload · B steed/use · R3 camera view.</div></div>
+      </div>
+    </div>
   </div>
-  <div style="max-width:900px;color:#cbbf9f;font-size:17px;line-height:1.5;text-align:center">Only a <b style="color:#ffd36a">deep cut to the nape</b> kills a titan — strike the back of its neck while moving fast. Cut ankles to drop them, arms to stop their grabs. A titan that glows red with a <b style="color:#f66">!</b> is about to swipe or grab.</div>
-  <button class="btn small" id="ctrl-back" style="width:200px;margin-top:26px;text-align:center">Back</button>
+
+  <div style="max-width:960px;color:#cbbf9f;font-size:16px;line-height:1.5;text-align:center;background:rgba(0,0,0,0.45);padding:14px 20px;border-left:4px solid var(--gold);border-radius:2px">
+    <b>Critical Combat Rule:</b> Only a <b style="color:#ffd36a">deep cut to the nape</b> permanently destroys a Titan — strike the back of its neck while moving at high velocity. Cut ankles to drop Titans to their knees, cut arms to break grabs. A Titan glowing with red steam and a <b style="color:#ff6a55">!</b> cue is preparing an immediate lethal grab or swipe.
+  </div>
+  <button class="btn small" id="ctrl-back" style="width:240px;margin-top:24px;text-align:center">Back to Title</button>
 </div>
 
 <div id="brief" class="screen">
