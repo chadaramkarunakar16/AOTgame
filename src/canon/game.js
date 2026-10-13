@@ -2254,6 +2254,7 @@ initTouch({
     P.pitch = Math.max(-1.5, Math.min(1.5, P.pitch));
   },
   pause: () => pauseGame(),
+  map: () => toggleTacticalMap(),
   board: () => { if (MP.active) setBoard(!MP.boardOpen); },
   chat: () => { if (G.chatOpen) G.chatOpen(); },
   grabbed: () => !!P.grabbedBy,
@@ -2262,9 +2263,22 @@ initTouch({
   changed: () => { lastHud = {}; $('touchon').checked = TOUCH.on; if (!TOUCH.on && gameState === 'play') toast('Click to aim', 1.6); },
   state: () => {
     const t = G.localTitan;
-    return { play: gameState === 'play', titan: !!t, mp: !!MP.active && G.mode === 'mp', chat: !!(G.chatAvail && G.chatAvail()), gunner: P.faction === 'interior', use: !!(G.mission && G.mission.interact) && G.mode !== 'mp',
-      strike: NS.state === 'strike', hooked: P.anchors.some(a => a.state === 'attached'), anchors: [P.anchors[0].state === 'attached', P.anchors[1].state === 'attached'],
-      targets: [TAIM[0].valid, TAIM[1].valid], dull: P.sharp < 25 && P.spare > 0 };
+    const steed = getActiveHorse();
+    return {
+      play: gameState === 'play',
+      titan: !!t,
+      mp: !!MP.active && G.mode === 'mp',
+      chat: !!(G.chatAvail && G.chatAvail()),
+      gunner: P.faction === 'interior',
+      use: !!(G.mission && G.mission.interact) && G.mode !== 'mp',
+      horse: P.mounted || (steed && steed.isPlayerNear(P, 6.0)),
+      mounted: P.mounted,
+      strike: NS.state === 'strike',
+      hooked: P.anchors.some(a => a.state === 'attached'),
+      anchors: [P.anchors[0].state === 'attached', P.anchors[1].state === 'attached'],
+      targets: [TAIM[0].valid, TAIM[1].valid],
+      dull: P.sharp < 25 && P.spare > 0
+    };
   }
 });
 // phones: a lighter start (the dynamic scaler still adjusts), a shorter view, and pause single player when the app is backgrounded
@@ -2430,7 +2444,7 @@ function frame(now) {
   if (gameState === 'brief') { const p = meshedAround(3); $('beginbtn').textContent = p >= 0.99 ? 'Begin Mission' : `Preparing district… ${Math.round(p * 100)}%`; }
   // dynamic resolution to hold 60fps
   dynT += rawDt;
-  if (dynT > 2) { dynT = 0; const pr = renderer.getPixelRatio(), lo = TOUCH.on ? 0.6 : 0.75, hi = Math.min(window.devicePixelRatio, TOUCH.on ? 1.5 : 1.25); if (fps < 50 && pr > lo) renderer.setPixelRatio(Math.max(lo, pr - 0.15)); else if (fps > 58 && pr < hi) renderer.setPixelRatio(Math.min(pr + 0.1, hi)); }
+  if (dynT > 2) { dynT = 0; const pr = renderer.getPixelRatio(), lo = TOUCH.on ? 0.65 : 0.75, hi = Math.min(window.devicePixelRatio, TOUCH.on ? 1.15 : 1.25); if (fps < 50 && pr > lo) renderer.setPixelRatio(Math.max(lo, pr - 0.15)); else if (fps > 58 && pr < hi) renderer.setPixelRatio(Math.min(pr + 0.1, hi)); }
   if (showDebug && MP.active && MP.net) {
     MP.net.measure = true;
     const N = MP.net.stats, now = performance.now();
@@ -2446,7 +2460,7 @@ function frame(now) {
 }
 
 /* ---------------------------------------------------------------- boot */
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, TOUCH.on ? 1.5 : 1.25));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, TOUCH.on ? 1.15 : 1.25));
 setupWorkers();
 startWorld(WORLD_SEED);
 setupDepots();
