@@ -9,7 +9,16 @@ import { Sfx } from './audio.js';
 import { G } from './state.js';
 
 const B = window.B;
-const groundTop = (x, z) => window.groundH(Math.floor(x), Math.floor(z)) + 1;
+const groundTop = (x, z) => {
+  if (typeof getBlock === 'function') {
+    const bx = Math.floor(x), bz = Math.floor(z);
+    for (let yy = 100; yy >= 20; yy--) {
+      const id = getBlock(bx, yy, bz);
+      if (id && SOLID[id]) return yy + 1;
+    }
+  }
+  return (typeof window !== 'undefined' && window.groundH) ? (window.groundH(Math.floor(x), Math.floor(z)) + 1) : 47;
+};
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _m = new THREE.Matrix4();
 const DOWN = new THREE.Vector3(0, -1, 0);
 const WALLISH = new Set([B.STONEBRICK, B.MOSSY]);
@@ -48,7 +57,8 @@ export class Titan {
     this.recentHits = new Map(); this.kit = null; this.input = null; this.lodN = Math.floor(Math.random() * 3);
     this.m = buildTitan(type, opts.rng); this.root = this.m.root; this.s = this.m.scale;
     scene.add(this.root);
-    this.pos = new THREE.Vector3(x, groundTop(x, z), z);
+    const gy = groundTop(x, z);
+    this.pos = new THREE.Vector3(x, opts.y != null && opts.y <= gy + 1 ? opts.y : gy, z);
     this.yaw = opts.yaw ?? Math.random() * Math.PI * 2;
     this.speed = this.T.speed * (0.85 + Math.random() * 0.3);
     this.state = 'walk'; this.st = 0; this.alive = true; this.removed = false;
@@ -371,9 +381,9 @@ export class Titan {
       const sx = this.pos.x - o.pos.x, sz = this.pos.z - o.pos.z, sd = Math.hypot(sx, sz), md = this.radius + o.radius;
       if (sd < md && sd > 0.01) { const push = (md - sd) * 0.5; this.pos.x += sx / sd * push; this.pos.z += sz / sd * push; }
     }
-    if (this.state !== 'leap' && !this.airborne && !this.airborneLock) {
+    if (this.state !== 'leap' && !this.airborne && !this.airborneLock && !this.thrown) {
       const gy = groundTop(this.pos.x, this.pos.z);
-      this.pos.y += (gy - this.pos.y) * Math.min(1, dt * 8);
+      this.pos.y = gy;
     }
     this.footsteps();
     this.groanT -= dt;

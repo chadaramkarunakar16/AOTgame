@@ -1,6 +1,7 @@
 /* =====================================================================
-   WALL MARIA: RECLAMATION — Procedural Voxel World Generator
-   Custom Curved Semicircular Bastion Geometry & Voxel Engine.
+   ATTACK ON TITAN: RECLAMATION — Procedural Voxel World Generator
+   Phase Two: Open-World Two-Wall Map Architecture
+   Canonical Layout: Wall Sina (Inner City) & Wall Rose (Breached Line)
    Shared by the main thread and Web Workers.
    ===================================================================== */
 var CS = 16, CH = 128, SEA = 40;
@@ -13,7 +14,7 @@ var B = {
   BARK: 35, PATH: 36, BANNER: 37, CRATE: 38, MOSSY: 39, HAY: 40, IRONBARS: 41, DIRT_PATH: 42, WINDOW: 43
 };
 var BIOME = { OCEAN: 0, BEACH: 1, PLAINS: 2, FOREST: 3, DESERT: 4, SNOWY: 5, MOUNTAINS: 6, DISTRICT: 7 };
-var BIOME_NAMES = ['Lake', 'Shore', 'Open Fields', 'Giant Forest', 'Desert', 'Snow', 'Mountains', 'Wall Maria — Shiganshina Sector'];
+var BIOME_NAMES = ['Lake', 'Shore', 'Open Fields', 'Giant Pine Forest', 'Desert', 'Snow', 'Mountains', 'Human Territory — Wall Sina'];
 
 function mulberry32(a) {
   return function () {
@@ -95,146 +96,228 @@ function initGen(seed) {
 }
 
 /* =====================================================================
-   WORLD LAYOUT: WALL MARIA — SHIGANSHINA BASTION
-   New Iconic Curved Horseshoe / Semicircular Bastion Geometry
+   WORLD LAYOUT: CANONICAL ATTACK ON TITAN TWO-WALL ARCHITECTURE
+   Wall Sina (Inner Living Sanctuary) & Wall Rose (Outer Breached Line)
+   Separated by the Vast Open-World Grand Expedition Field (~235m scale)
    ===================================================================== */
-var GROUND = 46;                 // District ground level (top block y)
-var WALL_TOP = 76;               // 50-meter Colossal Wall Maria walkway (y=76)
-var WALL_T = 7;                  // 7 blocks thick monolithic stone rampart
-var INNER_Z = -55;               // Inner straight Wall Maria line
-var CURVE_CZ = -10;              // Arc center Z for the curved outer wall
-var CURVE_R = 94;                // Radius of the curved outer fortress wall
-var GATE_HW = 7;                 // Smashed outer gate breach half-width
-var DR = 84;                     // Wall Maria Outer Breach Boundary
+var GROUND = 46;                 // Ground level
+var WALL_TOP = 86;               // 50-meter Colossal Wall height (y=86)
+var WALL_T = 8;                  // 8 blocks thick monolithic ramparts
 
-// ---- SECOND CITY: WALL ROSE CITADEL (Northern Sanctuary Fortress) ----
-var WALL_ROSE_Z = -105;          // Wall Rose southern fortress line
-var WALL_ROSE_INNER_Z = -165;    // Wall Rose inner northern limit
-var WALL_ROSE_TOP = 86;          // Highest peak of the walls (y=86)
-var WALL_ROSE_HW = 110;          // Wall Rose half-width
+// ---- 1. WALL SINA: ROYAL CAPITAL (MITRAS) & 4 CARDINAL DISTRICTS ----
+var SINA_CZ = -100;              // Royal Capital Center Z
+var SINA_R = 76;                 // Radius of circular Wall Sina
+// 4 Protruding Bastion Districts:
+var EHRMICH = { x0: -28, x1: 28, z0: -28, z1: 14 };   // South (Departure Gateway)
+var UTOPIA =  { x0: -28, x1: 28, z0: -214, z1: -172 }; // North
+var STOHESS = { x0: 72, x1: 114, z0: -128, z1: -72 };  // East
+var YARCKEL = { x0: -114, x1: -72, z0: -128, z1: -72 }; // West
 
-// Bastion Towers along the curved perimeter & inner wall corners
+// ---- 2. THE GRAND EXPEDITION FIELD (EXPANDED OPEN-WORLD VAST TERRITORY) ----
+// Highway corridor: |x| <= 4.5, z in [14, 196]
+// Dauper Village: x in [-85, -48], z in [40, 80]
+// Ragako Village: x in [-46, -18], z in [90, 125]
+// Utgard Castle: x in [-120, -88], z in [112, 142]
+// Giant Pine Forest:
+//   West: x in [-145, -48], z in [20, 185]
+//   East: x in [48, 145], z in [20, 185]
+
+// ---- 3. WALL ROSE: OUTER DEFENSIVE LINE & BREACHED TROST BASTION ----
+var WALL_ROSE_Z = 196;           // Southern monolithic rampart line
+var WALL_ROSE_HW = 140;          // Wall Rose half-width
+var TROST = { x0: -36, x1: 36, z0: 196, z1: 248 }; // Southern breached bastion
+var DR = 246;                    // Outer breach Z coordinate
+var GATE_HW = 8;                 // Breach opening half-width
+var WALL_MARIA_Z = 246;          // Backward-compatible alias
+var WALL_ROSE_TOP = 86;
+var INNER_Z = 14;                // Alias for Wall Sina South Gate line
+
+// Bastion Towers & Keeps
 var TOWERS = [];
 (function () {
-  // Corner Citadel Forts at inner wall junction (x = ±90, z = -55)
-  TOWERS.push({ x: -90, z: INNER_Z, hw: 7, top: WALL_TOP + 8, roof: B.ROOF_SLATE, flat: false });
-  TOWERS.push({ x: 90, z: INNER_Z, hw: 7, top: WALL_TOP + 8, roof: B.ROOF_SLATE, flat: false });
-  // Inner Wall Central Gate Bastions (x = ±16, z = -55)
-  TOWERS.push({ x: -16, z: INNER_Z, hw: 6, top: WALL_TOP + 4, roof: 0, flat: true });
-  TOWERS.push({ x: 16, z: INNER_Z, hw: 6, top: WALL_TOP + 4, roof: 0, flat: true });
+  // Mitras Royal Keep at Center of Wall Sina
+  TOWERS.push({ x: 0, z: SINA_CZ, hw: 10, top: WALL_TOP + 12, roof: B.ROOF_SLATE, flat: false });
 
-  // 6 Semicircular Bastions around the curved outer wall
-  var angles = [0.38, 0.82, 1.25, 1.89, 2.32, 2.76]; // Radians in south semi-circle
+  // Wall Sina South Departure Gate Twin Bastions (x = ±14, z = 14)
+  TOWERS.push({ x: -14, z: 14, hw: 6.5, top: WALL_TOP + 4, roof: 0, flat: true });
+  TOWERS.push({ x: 14, z: 14, hw: 6.5, top: WALL_TOP + 4, roof: 0, flat: true });
+
+  // Wall Sina 4 Cardinal Corner Bastions
+  TOWERS.push({ x: -28, z: 14, hw: 6, top: WALL_TOP + 6, roof: B.ROOF_SLATE, flat: false });
+  TOWERS.push({ x: 28, z: 14, hw: 6, top: WALL_TOP + 6, roof: B.ROOF_SLATE, flat: false });
+  TOWERS.push({ x: -28, z: -214, hw: 6, top: WALL_TOP + 6, roof: B.ROOF_SLATE, flat: false });
+  TOWERS.push({ x: 28, z: -214, hw: 6, top: WALL_TOP + 6, roof: B.ROOF_SLATE, flat: false });
+  TOWERS.push({ x: 114, z: -128, hw: 6, top: WALL_TOP + 6, roof: B.ROOF_RED, flat: false });
+  TOWERS.push({ x: 114, z: -72, hw: 6, top: WALL_TOP + 6, roof: B.ROOF_RED, flat: false });
+  TOWERS.push({ x: -114, z: -128, hw: 6, top: WALL_TOP + 6, roof: B.ROOF_RED, flat: false });
+  TOWERS.push({ x: -114, z: -72, hw: 6, top: WALL_TOP + 6, roof: B.ROOF_RED, flat: false });
+
+  // Wall Sina Circular Arc Bastions
+  var angles = [0.52, 1.05, 2.09, 2.62, 3.66, 4.19, 5.23, 5.76];
   angles.forEach(function (ang) {
-    var tx = Math.cos(ang) * (CURVE_R - 3.5);
-    var tz = CURVE_CZ + Math.sin(ang) * (CURVE_R - 3.5);
-    TOWERS.push({ x: Math.round(tx), z: Math.round(tz), hw: 5.5, top: WALL_TOP + 6, roof: B.ROOF_RED, flat: false });
+    var tx = Math.cos(ang) * (SINA_R - 4);
+    var tz = SINA_CZ + Math.sin(ang) * (SINA_R - 4);
+    TOWERS.push({ x: Math.round(tx), z: Math.round(tz), hw: 5.5, top: WALL_TOP + 4, roof: 0, flat: true });
   });
 
-  // Wall Rose Soaring Bastion Towers (Northern High Citadel)
-  TOWERS.push({ x: -105, z: WALL_ROSE_Z - 4, hw: 7.5, top: WALL_ROSE_TOP + 8, roof: B.ROOF_SLATE, flat: false });
-  TOWERS.push({ x: 105, z: WALL_ROSE_Z - 4, hw: 7.5, top: WALL_ROSE_TOP + 8, roof: B.ROOF_SLATE, flat: false });
-  TOWERS.push({ x: -20, z: WALL_ROSE_Z - 4, hw: 6.5, top: WALL_ROSE_TOP + 6, roof: 0, flat: true });
-  TOWERS.push({ x: 20, z: WALL_ROSE_Z - 4, hw: 6.5, top: WALL_ROSE_TOP + 6, roof: 0, flat: true });
-  TOWERS.push({ x: 0, z: WALL_ROSE_INNER_Z + 15, hw: 8.5, top: WALL_ROSE_TOP + 10, roof: B.ROOF_SLATE, flat: false }); // High Keep
+  // Wall Rose Main Rampart Bastions
+  TOWERS.push({ x: -136, z: WALL_ROSE_Z - 4, hw: 7.5, top: WALL_TOP + 8, roof: B.ROOF_SLATE, flat: false });
+  TOWERS.push({ x: 136, z: WALL_ROSE_Z - 4, hw: 7.5, top: WALL_ROSE_TOP + 8, roof: B.ROOF_SLATE, flat: false });
+  TOWERS.push({ x: -65, z: WALL_ROSE_Z - 4, hw: 6.5, top: WALL_ROSE_TOP + 4, roof: 0, flat: true });
+  TOWERS.push({ x: 65, z: WALL_ROSE_Z - 4, hw: 6.5, top: WALL_ROSE_TOP + 4, roof: 0, flat: true });
+
+  // Trost Breached Bastion Towers
+  TOWERS.push({ x: -22, z: 248, hw: 6.5, top: WALL_TOP + 6, roof: B.ROOF_RED, flat: false });
+  TOWERS.push({ x: 22, z: 248, hw: 6.5, top: WALL_TOP + 6, roof: B.ROOF_RED, flat: false });
+
+  // Utgard Castle Ruined Keep Tower
+  TOWERS.push({ x: -104, z: 124, hw: 7, top: GROUND + 28, roof: 0, flat: true });
 })();
 
-// Scout Training Yard in North-West district
-var YARD = { x0: -75, x1: -32, z0: -48, z1: -16 };
+// Scout Training Yard in Northwest Wall Sina
+var YARD = { x0: -65, x1: -30, z0: -85, z1: -50 };
 var POLES = [
-  [-62, -40, 24], [-45, -40, 22], [-62, -24, 25], [-45, -24, 20],
-  [-53, -32, 30], [-36, -32, 18], [-70, -32, 22]
+  [-55, -75, 24], [-40, -75, 22], [-55, -60, 25], [-40, -60, 20],
+  [-48, -68, 30], [-35, -68, 18], [-60, -68, 22]
 ];
 
-// Supply Depots across the territory
+// Strategic Supply Depots
 var SUPPLY = [
-  { x: 0, z: -12, name: 'Grand Forum Supply Depot' },
-  { x: 18, z: 80, wall: true, name: 'Outer Gate Wall Depot' },
-  { x: 0, z: -140, name: 'Wall Rose Citadel Command Depot' },
-  { x: -35, z: -130, name: 'Wall Rose Cavalry Stables' },
-  { x: 0, z: -80, name: 'Grand Plains Frontier Depot' },
-  { x: -140, z: 30, name: 'West Plains Cavalry Depot' },
-  { x: 140, z: -25, name: 'East Field Scout Depot' },
-  { x: -50, z: -30, name: 'Scout Regiment Yard Depot' }
+  { x: 0, z: -100, name: 'Royal Capital Mitras Central Depot' },
+  { x: 0, z: 2, name: 'Ehrmich Departure Plaza Depot' },
+  { x: 0, z: 65, name: 'Grand Highway Waystation Alpha' },
+  { x: -62, z: 62, name: 'Dauper Village Outpost Depot' },
+  { x: -104, z: 124, name: 'Utgard Castle Ruins Supply Cache' },
+  { x: 0, z: 135, name: 'Grand Highway Waystation Bravo' },
+  { x: 0, z: 196, name: 'Wall Rose Trost Inner Gate Depot' },
+  { x: 22, z: 246, wall: true, name: 'Trost Outer Rampart Depot' },
+  { x: -90, z: -100, name: 'Yarckel District Depot' },
+  { x: 90, z: -100, name: 'Stohess District Depot' },
+  { x: -48, z: -68, name: 'Scout Regiment Yard Depot' }
 ];
 
 /* ---- Wall & District Geometry Predicates ---- */
-function wallDist(x, z) {
-  if (z <= INNER_Z) {
-    return Math.abs(z - INNER_Z);
-  }
-  return Math.sqrt(x * x + (z - CURVE_CZ) * (z - CURVE_CZ));
+function inWallSina(x, z) {
+  // Circular sanctuary
+  var d2 = x * x + (z - SINA_CZ) * (z - SINA_CZ);
+  if (d2 < SINA_R * SINA_R) return true;
+  // 4 Protruding cardinal districts
+  if (x >= EHRMICH.x0 && x <= EHRMICH.x1 && z >= EHRMICH.z0 && z <= EHRMICH.z1) return true;
+  if (x >= UTOPIA.x0 && x <= UTOPIA.x1 && z >= UTOPIA.z0 && z <= UTOPIA.z1) return true;
+  if (x >= STOHESS.x0 && x <= STOHESS.x1 && z >= STOHESS.z0 && z <= STOHESS.z1) return true;
+  if (x >= YARCKEL.x0 && x <= YARCKEL.x1 && z >= YARCKEL.z0 && z <= YARCKEL.z1) return true;
+  return false;
 }
+function inDistrict(x, z) { return inWallSina(x, z); }
 
-function inDistrict(x, z) {
-  if (z < INNER_Z) return false;
-  var d = Math.sqrt(x * x + (z - CURVE_CZ) * (z - CURVE_CZ));
-  return d < CURVE_R;
-}
-
-function onWall(x, z) {
-  // Inner straight wall: along z = INNER_Z between x = -92 and 92
-  if (Math.abs(z - INNER_Z) <= Math.ceil(WALL_T / 2)) {
-    if (Math.abs(x) <= 93) return true;
+function onWallSina(x, z) {
+  var d = Math.sqrt(x * x + (z - SINA_CZ) * (z - SINA_CZ));
+  // Circular ring wall
+  if (d >= SINA_R - WALL_T && d <= SINA_R) {
+    // Openings into the 4 protruding districts
+    if (z > SINA_CZ + SINA_R - 12 && Math.abs(x) < 22) return false; // South to Ehrmich
+    if (z < SINA_CZ - SINA_R + 12 && Math.abs(x) < 22) return false; // North to Utopia
+    if (x > SINA_R - 12 && Math.abs(z - SINA_CZ) < 22) return false; // East to Stohess
+    if (x < -(SINA_R - 12) && Math.abs(z - SINA_CZ) < 22) return false; // West to Yarckel
+    return true;
   }
-  // Curved outer wall: along the semicircular arc
-  if (z > INNER_Z - 2) {
-    var d = Math.sqrt(x * x + (z - CURVE_CZ) * (z - CURVE_CZ));
-    if (d >= CURVE_R - WALL_T && d <= CURVE_R) {
-      // Breached South Gate opening at the bottom
-      if (z > 78 && Math.abs(x) < GATE_HW) return false;
+  // Ehrmich outer walls (South)
+  if (z >= EHRMICH.z0 && z <= EHRMICH.z1) {
+    if (Math.abs(x - EHRMICH.x0) < WALL_T || Math.abs(x - EHRMICH.x1) < WALL_T) return true;
+    if (z >= EHRMICH.z1 - WALL_T && z <= EHRMICH.z1) {
+      if (Math.abs(x) <= 5.5) return false; // Grand Departure Gate archway
+      return true;
+    }
+  }
+  // Utopia outer walls (North)
+  if (z >= UTOPIA.z0 && z <= UTOPIA.z1) {
+    if (Math.abs(x - UTOPIA.x0) < WALL_T || Math.abs(x - UTOPIA.x1) < WALL_T) return true;
+    if (z <= UTOPIA.z0 + WALL_T && z >= UTOPIA.z0) {
+      if (Math.abs(x) <= 5.5) return false;
+      return true;
+    }
+  }
+  // Stohess outer walls (East)
+  if (x >= STOHESS.x0 && x <= STOHESS.x1) {
+    if (Math.abs(z - STOHESS.z0) < WALL_T || Math.abs(z - STOHESS.z1) < WALL_T) return true;
+    if (x >= STOHESS.x1 - WALL_T && x <= STOHESS.x1) {
+      if (Math.abs(z - SINA_CZ) <= 5.5) return false;
+      return true;
+    }
+  }
+  // Yarckel outer walls (West)
+  if (x >= YARCKEL.x0 && x <= YARCKEL.x1) {
+    if (Math.abs(z - YARCKEL.z0) < WALL_T || Math.abs(z - YARCKEL.z1) < WALL_T) return true;
+    if (x <= YARCKEL.x0 + WALL_T && x >= YARCKEL.x0) {
+      if (Math.abs(z - SINA_CZ) <= 5.5) return false;
+      return true;
+    }
+  }
+  return false;
+}
+function onWall(x, z) { return onWallSina(x, z); }
+
+function onWallRose(x, z) {
+  // Main southern monolithic line of Wall Rose at z = WALL_ROSE_Z
+  if (Math.abs(x) <= WALL_ROSE_HW && z <= WALL_ROSE_Z && z >= WALL_ROSE_Z - WALL_T) {
+    if (Math.abs(x) <= 8.5) return false; // Monumental avenue arch into Trost
+    return true;
+  }
+  // Trost District flanking walls
+  if (z >= WALL_ROSE_Z && z <= TROST.z1) {
+    if (Math.abs(x - TROST.x0) < WALL_T || Math.abs(x - TROST.x1) < WALL_T) return true;
+    // Trost breached southern outer wall
+    if (z >= TROST.z1 - WALL_T && z <= TROST.z1) {
+      if (Math.abs(x) <= GATE_HW + 2) return false; // Smashed Colossal breach!
       return true;
     }
   }
   return false;
 }
 
-function onWallRose(x, z) {
-  // Southern monolithic defensive line of Wall Rose
-  if (Math.abs(x) <= WALL_ROSE_HW && z <= WALL_ROSE_Z && z >= WALL_ROSE_Z - 8) {
-    if (Math.abs(x) <= 5.5) return false; // Monumental arched gateway for riders
-    return true;
-  }
-  // Eastern and Western flanking ramparts
-  if (z < WALL_ROSE_Z && z >= WALL_ROSE_INNER_Z && (Math.abs(x - WALL_ROSE_HW) <= 4 || Math.abs(x - (-WALL_ROSE_HW)) <= 4)) {
-    return true;
-  }
-  // Northern Citadel Keep wall
-  if (Math.abs(x) <= WALL_ROSE_HW && z <= WALL_ROSE_INNER_Z + 6 && z >= WALL_ROSE_INNER_Z) {
-    return true;
-  }
-  return false;
-}
-
-function inWallRoseCity(x, z) {
-  return Math.abs(x) < WALL_ROSE_HW && z < WALL_ROSE_Z - 8 && z > WALL_ROSE_INNER_Z + 6;
+function inTrost(x, z) {
+  return x > TROST.x0 && x < TROST.x1 && z > WALL_ROSE_Z && z < TROST.z1;
 }
 
 function isBreach(x, z) {
-  if (z >= 76 && z <= 98 && Math.abs(x) <= GATE_HW + 3) return true;
+  if (z >= TROST.z1 - WALL_T - 4 && z <= TROST.z1 + 12 && Math.abs(x) <= GATE_HW + 4) return true;
   return false;
+}
+
+function isHighway(x, z) {
+  return Math.abs(x) <= 4.5 && z >= EHRMICH.z1 && z <= WALL_ROSE_Z;
+}
+
+function inDauper(x, z) {
+  return x >= -85 && x <= -48 && z >= 40 && z <= 80;
+}
+
+function inUtgard(x, z) {
+  return x >= -120 && x <= -88 && z >= 112 && z <= 142;
+}
+
+function inRagako(x, z) {
+  return x >= -46 && x <= -18 && z >= 90 && z <= 125;
 }
 
 /* ---- Natural Canal River Geometry ---- */
 function canalX(z) {
-  // Graceful S-curve canal cutting through the eastern quarter
-  return 34 + Math.sin(z * 0.045) * 8 + Math.cos(z * 0.02) * 4;
+  return 36 + Math.sin((z - SINA_CZ) * 0.05) * 8 + Math.cos((z - SINA_CZ) * 0.025) * 4;
 }
 function isCanal(x, z) {
-  if (!inDistrict(x, z) || onWall(x, z)) return false;
+  if (!inWallSina(x, z) || onWallSina(x, z)) return false;
   var cx = canalX(z);
   return Math.abs(x - cx) <= 4.2;
 }
 function isBridge(x, z) {
   if (!isCanal(x, z)) return false;
-  // Three wide arched stone bridges: North (z=-32), Center (z=2), South (z=48)
-  return Math.abs(z - (-32)) <= 3.5 || Math.abs(z - 2) <= 4.5 || Math.abs(z - 48) <= 4.0;
+  return Math.abs(z - (SINA_CZ - 30)) <= 3.5 || Math.abs(z - SINA_CZ) <= 4.5 || Math.abs(z - (SINA_CZ + 35)) <= 4.0;
 }
 
 /* ---- Center Sunken Forum & Street Network ---- */
 function isForum(x, z) {
-  // Open circular sunken amphitheater / forum at the city center (0, 0)
-  return (x * x + z * z) <= 20 * 20;
+  var dx = x, dz = z - SINA_CZ;
+  return (dx * dx + dz * dz) <= 22 * 22;
 }
 
 function isStreet(x, z) {
@@ -242,22 +325,20 @@ function isStreet(x, z) {
   if (isCanal(x, z)) return false;
   if (isForum(x, z)) return true;
 
-  var d = Math.sqrt(x * x + (z - CURVE_CZ) * (z - CURVE_CZ));
-  // Inner ring avenue running along the curved wall
-  if (d >= CURVE_R - WALL_T - 9 && d <= CURVE_R - WALL_T - 2) return true;
-  // Inner patrol road along northern straight wall
-  if (z >= INNER_Z + 2 && z <= INNER_Z + 8 && Math.abs(x) < 85) return true;
-
-  // Grand South Breach Boulevard heading to the outer gate
-  if (Math.abs(x) <= 4.5 && z > 15) return true;
-  // Grand North Citadel Boulevard
-  if (Math.abs(x) <= 4.0 && z < -15 && z > INNER_Z) return true;
+  // Grand Departure Boulevard (0, -100) -> (0, 14)
+  if (Math.abs(x) <= 4.5 && z >= SINA_CZ && z <= EHRMICH.z1) return true;
+  // Grand North Imperial Boulevard (0, -100) -> Utopia
+  if (Math.abs(x) <= 4.0 && z <= SINA_CZ && z >= UTOPIA.z0) return true;
   // East-West Grand Cross Avenues
-  if (Math.abs(z) <= 4.0 && Math.abs(x) > 15 && Math.abs(x) < 82) return true;
+  if (Math.abs(z - SINA_CZ) <= 4.0 && Math.abs(x) <= STOHESS.x1) return true;
 
-  // Diagonal Radial Boulevards (45 deg angles from center)
-  var d1 = Math.abs(x - z), d2 = Math.abs(x + z);
-  if ((d1 <= 3.0 || d2 <= 3.0) && (x * x + z * z) < 65 * 65) return true;
+  // Inner ring avenues running along the circular wall
+  var d = Math.sqrt(x * x + (z - SINA_CZ) * (z - SINA_CZ));
+  if (d >= SINA_R - WALL_T - 9 && d <= SINA_R - WALL_T - 2) return true;
+
+  // Diagonal Boulevards
+  var d1 = Math.abs(x - (z - SINA_CZ)), d2 = Math.abs(x + (z - SINA_CZ));
+  if ((d1 <= 3.0 || d2 <= 3.0) && d < 65) return true;
 
   return false;
 }
@@ -275,25 +356,24 @@ function towerAt(x, z) {
   return null;
 }
 
-/* ---- Procedural Building Lots ---- */
-var LOT = 11, LOT_OFF = 550;
+/* ---- Procedural Building Lots in Wall Sina ---- */
+var LOT = 11, LOT_OFF = 600;
 var HOUSE = { ok: false, u0: 0, u1: 0, v0: 0, v1: 0, top: 0, axisX: true, roof: 0, chimney: false, wallMat: 0 };
 function lotArea(x, z) {
-  return inDistrict(x, z) && !onWall(x, z) && !isStreet(x, z) && !inYard(x, z) && !isCanal(x, z);
+  return inWallSina(x, z) && !onWallSina(x, z) && !isStreet(x, z) && !inYard(x, z) && !isCanal(x, z);
 }
 
 function houseFor(li, lj) {
   var h1 = hash2(li, lj, 71), h2 = hash2(li, lj, 72), h3 = hash2(li, lj, 73), h4 = hash2(li, lj, 74);
   var bx = li * LOT - LOT_OFF, bz = lj * LOT - LOT_OFF;
   HOUSE.ok = false;
-  if (h1 < 0.12) return HOUSE; // open courtyard / garden
+  if (h1 < 0.12) return HOUSE; // open courtyard
   HOUSE.u0 = 1 + (h2 < 0.5 ? 0 : 1); HOUSE.u1 = LOT - 2 - (h3 < 0.5 ? 0 : 1);
   HOUSE.v0 = 1 + (h3 < 0.3 ? 1 : 0); HOUSE.v1 = LOT - 2 - (h2 < 0.7 ? 0 : 1);
   var xa = bx + HOUSE.u0 - 1, xb = bx + HOUSE.u1 + 1, za = bz + HOUSE.v0 - 1, zb = bz + HOUSE.v1 + 1;
   if (!lotArea(xa, za) || !lotArea(xb, za) || !lotArea(xa, zb) || !lotArea(xb, zb)) return HOUSE;
   if (!lotArea((xa + xb) >> 1, za) || !lotArea((xa + xb) >> 1, zb) || !lotArea(xa, (za + zb) >> 1) || !lotArea(xb, (za + zb) >> 1)) return HOUSE;
 
-  // Stories: 2 to 5 stories
   var stories = 2 + Math.floor(h4 * 3);
   if (hash2(li, lj, 75) < 0.2) stories = 5 + Math.floor(hash2(li, lj, 76) * 2);
   HOUSE.top = GROUND + stories * 4;
@@ -314,32 +394,36 @@ function houseRoofY(u, v) {
 
 /* ---- Terrain height ---- */
 function groundH(x, z) {
-  var ind = inDistrict(x, z);
-  if (ind) {
-    // Sunken Forum at center: gently steps down by 2 blocks
+  // Inside Wall Sina: perfectly graded city terrace
+  if (inWallSina(x, z)) {
     if (isForum(x, z)) {
-      var d2 = x * x + z * z;
+      var d2 = x * x + (z - SINA_CZ) * (z - SINA_CZ);
       if (d2 < 12 * 12) return GROUND - 2;
       if (d2 < 18 * 18) return GROUND - 1;
       return GROUND;
     }
-    // High Garrison Terrace in North-West
-    if (x < -28 && z < -10 && !onWall(x, z)) {
-      return GROUND + 2;
-    }
+    if (x < -28 && z < SINA_CZ + 15 && !onWallSina(x, z)) return GROUND + 2;
     return GROUND;
   }
 
-  // Outside terrain: rolling hills and mountain ridges
+  // Inside Trost: flat district grade
+  if (inTrost(x, z)) return GROUND;
+
+  // The Grand Highway corridor is flat and smooth for galloping steeds
+  if (isHighway(x, z)) return GROUND;
+
+  // Outside terrain: rolling hills, river valleys, and mountain ridges
   var h = GROUND;
-  var d = Math.sqrt(x * x + (z - CURVE_CZ) * (z - CURVE_CZ));
-  var flat = smoothstep(CURVE_R + 8, CURVE_R + 55, d);
+  var dSina = Math.sqrt(x * x + (z - SINA_CZ) * (z - SINA_CZ));
+  var flat = smoothstep(SINA_R + 10, SINA_R + 60, dSina);
   if (flat > 0) {
-    var hills = fbm2(G.cont, x * 0.0055, z * 0.0055, 4) * 11 + fbm2(G.det, x * 0.03, z * 0.03, 2) * 1.5;
-    var road = Math.abs(x) < 20 && z > 0 ? 0.3 : 1;
-    h += hills * flat * road;
+    var hills = fbm2(G.cont, x * 0.0055, z * 0.0055, 4) * 12 + fbm2(G.det, x * 0.03, z * 0.03, 2) * 1.5;
+    var roadDist = Math.abs(x);
+    var roadSuppression = roadDist < 16 ? roadDist / 16 : 1;
+    h += hills * flat * roadSuppression;
   }
-  var m = smoothstep(320, 460, d);
+  // Distant mountain ranges
+  var m = smoothstep(340, 480, Math.hypot(x, z - 80));
   if (m > 0) {
     var rid = 1 - Math.abs(fbm2(G.ridge, x * 0.009, z * 0.009, 4) * 1.6);
     if (rid < 0) rid = 0;
@@ -352,47 +436,53 @@ function groundH(x, z) {
 }
 
 function forestAt(x, z) {
-  var d = Math.sqrt(x * x + (z - CURVE_CZ) * (z - CURVE_CZ));
-  if (d < CURVE_R + 25) return 0;
-  if (z > 80 && Math.abs(x) < 45) return 0; // Southern cavalry charge approach
-  if (z < -90 && z > -340 && Math.abs(x) < 250) return 1; // Northern Great Forest of Giant Trees
+  // Clear human territory and highway
+  if (inWallSina(x, z) || inTrost(x, z) || onWallRose(x, z)) return 0;
+  if (Math.abs(x) < 32 && z >= EHRMICH.z1 && z <= TROST.z1 + 80) return 0; // Grand Highway & charge avenue
+
+  // The Giant Pine Forests flanking the highway
+  if (z >= 20 && z <= 185) {
+    if (x >= 45 && x <= 145) return 1; // East Forest of Giant Trees
+    if (x >= -145 && x <= -45) return 1; // West Forest of Giant Trees
+  }
   return fbm2(G.moist, x * 0.0042, z * 0.0042, 3) > 0.12 ? 1 : 0;
 }
 
 /* ---- Giant Trees (Forest of Giant Trees) ---- */
-var TCELL = 30;
+var TCELL = 32;
 function giantTree(gx, gz) {
   var key = (gx + 5000) * 10000 + (gz + 5000);
   if (TREE_CACHE.has(key)) return TREE_CACHE.get(key);
   var t = null;
-  var px = gx * TCELL + 5 + Math.floor(hash2(gx, gz, 41) * (TCELL - 10));
-  var pz = gz * TCELL + 5 + Math.floor(hash2(gx, gz, 42) * (TCELL - 10));
-  var f = forestAt(px, pz), d = Math.sqrt(px * px + (pz - CURVE_CZ) * (pz - CURVE_CZ));
-  var p = f ? 0.86 : 0.05;
-  if (d < CURVE_R + 24 || (pz > 80 && Math.abs(px) < 30)) p = 0;
-  if (Math.sqrt(px * px + pz * pz) > 420) p = 0;
+  var px = gx * TCELL + 6 + Math.floor(hash2(gx, gz, 41) * (TCELL - 12));
+  var pz = gz * TCELL + 6 + Math.floor(hash2(gx, gz, 42) * (TCELL - 12));
+  var f = forestAt(px, pz);
+  var p = f ? 0.90 : 0.04;
+  if (inWallSina(px, pz) || inTrost(px, pz) || onWallRose(px, pz) || (Math.abs(px) < 28 && pz >= 10 && pz <= 260)) p = 0;
+  if (inDauper(px, pz) || inUtgard(px, pz)) p = 0;
+
   if (hash2(gx, gz, 43) < p) {
     var base = groundH(px, pz);
     if (base > SEA) {
-      var rt = 2.4 + hash2(gx, gz, 44) * 1.6;
-      var th = Math.min(42 + Math.floor(hash2(gx, gz, 45) * 28), CH - 14 - base);
+      var rt = 2.6 + hash2(gx, gz, 44) * 1.8;
+      var th = Math.min(44 + Math.floor(hash2(gx, gz, 45) * 30), CH - 14 - base);
       var br = [], blobs = [];
       var nb = 4 + Math.floor(hash2(gx, gz, 46) * 4), a0 = hash2(gx, gz, 47) * 6.283;
       for (var i = 0; i < nb; i++) {
         var a = a0 + i * 2.39996 + (hash2(gx + i, gz, 48) - 0.5) * 0.6;
         var sy = base + th * (0.42 + 0.5 * i / nb) + hash2(gx, gz + i, 49) * 3;
-        var len = 7 + hash2(gx + i, gz - i, 50) * 7, rise = 3 + hash2(gx - i, gz + i, 61) * 6;
+        var len = 8 + hash2(gx + i, gz - i, 50) * 8, rise = 3 + hash2(gx - i, gz + i, 61) * 6;
         var ex = px + 0.5 + Math.cos(a) * len, ez = pz + 0.5 + Math.sin(a) * len, ey = sy + rise;
-        br.push([px + 0.5, sy, pz + 0.5, ex, ey, ez, 1.4]);
-        var rb = 4.4 + hash2(gx + i, gz + i, 62) * 2.6;
+        br.push([px + 0.5, sy, pz + 0.5, ex, ey, ez, 1.5]);
+        var rb = 4.6 + hash2(gx + i, gz + i, 62) * 2.8;
         blobs.push([ex, ey + 1.2, ez, rb, rb * 0.62, i & 1 ? B.CANOPY_LIGHT : B.CANOPY]);
       }
       for (var k = 0; k < 4; k++) {
         var ra = a0 + k * 1.5708 + 0.5;
-        var rlen = 3.5 + hash2(gx + k, gz, 63) * 2.5;
-        br.push([px + 0.5, base + 0.5, pz + 0.5, px + 0.5 + Math.cos(ra) * rlen, base + 0.2, pz + 0.5 + Math.sin(ra) * rlen, 0.9]);
+        var rlen = 4.0 + hash2(gx + k, gz, 63) * 2.5;
+        br.push([px + 0.5, base + 0.5, pz + 0.5, px + 0.5 + Math.cos(ra) * rlen, base + 0.2, pz + 0.5 + Math.sin(ra) * rlen, 0.95]);
       }
-      blobs.push([px + 0.5, base + th + 1.5, pz + 0.5, 5.8, 4.2, B.CANOPY]);
+      blobs.push([px + 0.5, base + th + 1.5, pz + 0.5, 6.2, 4.4, B.CANOPY]);
       t = { x: px, z: pz, base: base, th: th, rt: rt, br: br, blobs: blobs };
     }
   }
@@ -401,19 +491,17 @@ function giantTree(gx, gz) {
 }
 
 /* ---- Outer Plains Structures ---- */
-var WCELL = 42;
+var WCELL = 46;
 function watchtower(wx, wz) {
   var h = hash2(wx, wz, 91);
-  if (h > 0.35) return null;
+  if (h > 0.32) return null;
   var px = wx * WCELL + 6 + Math.floor(hash2(wx, wz, 92) * (WCELL - 12));
   var pz = wz * WCELL + 6 + Math.floor(hash2(wx, wz, 93) * (WCELL - 12));
-  var d = Math.sqrt(px * px + (pz - CURVE_CZ) * (pz - CURVE_CZ));
-  if (d < CURVE_R + 25) return null;
+  if (inWallSina(px, pz) || inTrost(px, pz) || onWallRose(px, pz) || isHighway(px, pz)) return null;
   var gh = groundH(px, pz);
   if (gh <= SEA) return null;
   return { x: px, z: pz, h: 14 + Math.floor(h * 12), ruin: h < 0.18 };
 }
-
 function outwork(gx, gz) { return null; }
 function outworkAt(x, z) { return null; }
 
@@ -427,7 +515,7 @@ function generateChunk(cx, cz) {
   for (z = 0; z < CS; z++) for (x = 0; x < CS; x++) {
     var wx = x0 + x, wz = z0 + z, base = (z << 4) | x;
     var h = groundH(wx, wz);
-    var inside = inDistrict(wx, wz);
+    var inside = inWallSina(wx, wz);
     var forest = forestAt(wx, wz);
     biomes[z * CS + x] = inside ? BIOME.DISTRICT : forest ? BIOME.FOREST : (h <= SEA ? BIOME.OCEAN : BIOME.PLAINS);
     var mtn = h > GROUND + 30;
@@ -441,9 +529,16 @@ function generateChunk(cx, cz) {
     }
     if (h < SEA) for (y = h + 1; y <= SEA; y++) blocks[(y << 8) | base] = B.WATER;
 
-    var inRose = inWallRoseCity(wx, wz);
-    var roseWall = onWallRose(wx, wz);
-    if (inside || onWall(wx, wz) || isBreach(wx, wz) || inRose || roseWall) {
+    var onSina = onWallSina(wx, wz);
+    var inTr = inTrost(wx, wz);
+    var onRose = onWallRose(wx, wz);
+    var breach = isBreach(wx, wz);
+    var hw = isHighway(wx, wz);
+    var daup = inDauper(wx, wz);
+    var utg = inUtgard(wx, wz);
+    var rag = inRagako(wx, wz);
+
+    if (inside || onSina || inTr || onRose || breach || hw || daup || utg || rag) {
       districtColumn(blocks, base, wx, wz, h);
     } else {
       fieldColumn(blocks, base, wx, wz, h, forest);
@@ -456,137 +551,171 @@ function generateChunk(cx, cz) {
   return { blocks: blocks, biomes: biomes, maxY: maxY };
 }
 
-/* ---- District & Wall Column Generation ---- */
+/* ---- District, Highway & Wall Column Generation ---- */
 function districtColumn(bl, base, x, z, h) {
   var y;
   var t = towerAt(x, z);
   if (t) { towerColumn(bl, base, x, z, t); return; }
 
-  // Smashed Outer Gate Breach with fallen rubble
+  // Smashed Outer Gate Breach in Wall Rose (Trost)
   if (isBreach(x, z)) {
     var breachRubble = hash2(x, z, 81);
-    var rH = GROUND + Math.floor(breachRubble * 7) + (Math.abs(x) > GATE_HW ? 6 : 0);
+    var rH = GROUND + Math.floor(breachRubble * 8) + (Math.abs(x) > GATE_HW ? 7 : 0);
     for (y = GROUND; y <= rH; y++) {
       bl[(y << 8) | base] = (y % 2 === 0) ? B.COBBLE : B.STONEBRICK;
     }
-    if (breachRubble < 0.25) bl[((rH + 1) << 8) | base] = B.TIMBER;
+    if (breachRubble < 0.3) bl[((rH + 1) << 8) | base] = B.TIMBER;
     return;
   }
 
-  // Monolithic Wall Rose (Highest Peak Citadel)
+  // Monolithic Wall Rose (Highest Peak Citadel) - 100% FLAT TOP
   if (onWallRose(x, z)) {
-    var roseTopY = WALL_ROSE_TOP;
-    for (y = GROUND + 1; y <= roseTopY; y++) {
+    for (y = GROUND + 1; y <= WALL_TOP; y++) {
       var rBlk = (y % 3 === 0) ? B.STONEBRICK : B.STONE;
       if (hash3(x, y, z, 86) < 0.06) rBlk = B.COBBLE;
       bl[(y << 8) | base] = rBlk;
     }
+    // Solid smooth parapet along edges (no crenellation checkerboard holes)
+    var isEdgeRose = (Math.abs(z - WALL_ROSE_Z) <= 1 || Math.abs(z - (WALL_ROSE_Z - WALL_T)) <= 1);
+    if (isEdgeRose) bl[((WALL_TOP + 1) << 8) | base] = B.STONEBRICK;
     return;
   }
 
-  // Wall Rose Inner Citadel City (Sanctuary Fortress)
-  if (inWallRoseCity(x, z)) {
+  // Colossal Monolithic Wall Sina - 100% FLAT TOP
+  if (onWallSina(x, z)) {
+    for (y = GROUND + 1; y <= WALL_TOP; y++) {
+      var blk = B.STONEBRICK;
+      if (hash3(x, y, z, 82) < 0.08) blk = B.COBBLE;
+      else if (hash3(x, y, z, 83) < 0.04) blk = B.MOSSY;
+      bl[(y << 8) | base] = blk;
+    }
+    // Solid smooth edge parapet
+    var dSina = Math.sqrt(x * x + (z - SINA_CZ) * (z - SINA_CZ));
+    var isEdgeSina = (dSina <= SINA_R - WALL_T + 1 || dSina >= SINA_R - 1);
+    if (isEdgeSina) bl[((WALL_TOP + 1) << 8) | base] = B.STONEBRICK;
+    return;
+  }
+
+  // Grand Royal Highway connecting Wall Sina to Wall Rose
+  if (isHighway(x, z)) {
+    bl[(h << 8) | base] = (Math.abs(x) < 3.0) ? B.PATH : B.STONEBRICK;
+    // Iron lantern posts and Scout green banners every 18 blocks
+    if (Math.abs(x) === 4 && (z % 18 === 0)) {
+      for (y = h + 1; y <= h + 3; y++) bl[(y << 8) | base] = B.IRONBARS;
+      bl[((h + 4) << 8) | base] = B.GOLD;
+      bl[((h + 3) << 8) | base] = B.BANNER;
+    }
+    return;
+  }
+
+  // Utgard Castle Ruins in Southwest
+  if (inUtgard(x, z)) {
+    var du = Math.hypot(x - (-104), z - 124);
+    if (du <= 16) {
+      if (du > 11 && du <= 13) {
+        // Ruined outer ring wall
+        var uWallH = GROUND + 7 + Math.floor(hash2(x, z, 90) * 4);
+        for (y = GROUND + 1; y <= uWallH; y++) bl[(y << 8) | base] = (y % 2 === 0) ? B.STONEBRICK : B.MOSSY;
+        return;
+      }
+      bl[(h << 8) | base] = B.COBBLE;
+      if (hash2(x, z, 91) < 0.15) bl[((h + 1) << 8) | base] = B.CRATE;
+      return;
+    }
+  }
+
+  // Dauper Village in Southwest (Rustic cabins & farms)
+  if (inDauper(x, z)) {
+    var dli = Math.floor((x + 500) / 12), dlj = Math.floor((z + 500) / 12);
+    var dSeed = hash2(dli, dlj, 92);
+    if (dSeed > 0.4) {
+      var dx = (x + 500) % 12, dz = (z + 500) % 12;
+      if (dx >= 3 && dx <= 8 && dz >= 3 && dz <= 8) {
+        var cabinH = GROUND + 5;
+        for (y = GROUND + 1; y <= cabinH; y++) {
+          var isW = dx === 3 || dx === 8 || dz === 3 || dz === 8;
+          bl[(y << 8) | base] = isW ? B.LOG : B.PLANKS;
+        }
+        bl[((cabinH + 1) << 8) | base] = B.HAY;
+        return;
+      }
+    }
+    bl[(h << 8) | base] = hash2(x, z, 93) < 0.6 ? B.DIRT_PATH : B.GRASS;
+    if (hash2(x, z, 94) < 0.08) bl[((h + 1) << 8) | base] = B.HAY;
+    return;
+  }
+
+  // Ragako Village (Rustic huts)
+  if (inRagako(x, z)) {
+    bl[(h << 8) | base] = hash2(x, z, 95) < 0.5 ? B.DIRT_PATH : B.GRASS;
+    return;
+  }
+
+  // Trost District inside Wall Rose (Ruined urban battleground)
+  if (inTrost(x, z)) {
     bl[(h << 8) | base] = B.COBBLE;
     if (Math.abs(x) <= 4.5) {
-      bl[(h << 8) | base] = B.STONEBRICK; // Citadel Command Boulevard
-      if (Math.abs(x) === 4 && (z % 12 === 0)) {
-        bl[((h + 1) << 8) | base] = B.IRONBARS;
-        bl[((h + 2) << 8) | base] = B.GOLD;
-      }
+      bl[(h << 8) | base] = B.STONEBRICK; // Central ruined avenue
     } else {
-      var rli = Math.floor((x + 500) / 10), rlj = Math.floor((z + 500) / 10);
-      var rSeed = hash2(rli, rlj, 88);
-      if (rSeed > 0.25) {
-        var rx = (x + 500) % 10, rz = (z + 500) % 10;
-        if (rx >= 2 && rx <= 7 && rz >= 2 && rz <= 7) {
-          var bHeight = GROUND + 5 + Math.floor(rSeed * 4);
-          for (y = GROUND + 1; y <= bHeight; y++) {
-            var isW = rx === 2 || rx === 7 || rz === 2 || rz === 7;
-            bl[(y << 8) | base] = isW ? B.STONEBRICK : B.PLANKS;
+      var tli = Math.floor((x + 500) / 10), tlj = Math.floor((z + 500) / 10);
+      var tSeed = hash2(tli, tlj, 88);
+      if (tSeed > 0.3) {
+        var tx = (x + 500) % 10, tz = (z + 500) % 10;
+        if (tx >= 2 && tx <= 7 && tz >= 2 && tz <= 7) {
+          var tbHeight = GROUND + 4 + Math.floor(tSeed * 5);
+          for (y = GROUND + 1; y <= tbHeight; y++) {
+            var isTw = tx === 2 || tx === 7 || tz === 2 || tz === 7;
+            bl[(y << 8) | base] = isTw ? B.STONEBRICK : B.PLANKS;
           }
-          bl[((bHeight + 1) << 8) | base] = B.ROOF_SLATE;
+          bl[((tbHeight + 1) << 8) | base] = B.ROOF_SLATE;
         }
       }
     }
     return;
   }
 
-  // Colossal Monolithic Wall Maria
-  if (onWall(x, z)) {
-    var wallTopY = WALL_TOP;
-    for (y = GROUND + 1; y <= wallTopY; y++) {
-      var isEdge = false;
-      // Edge battlements
-      if (z <= INNER_Z + 1 || z >= INNER_Z + WALL_T - 1) isEdge = true;
-      var d = Math.sqrt(x * x + (z - CURVE_CZ) * (z - CURVE_CZ));
-      if (d <= CURVE_R - WALL_T + 1 || d >= CURVE_R - 1) isEdge = true;
-
-      var blk = B.STONEBRICK;
-      if (hash3(x, y, z, 82) < 0.08) blk = B.COBBLE;
-      else if (hash3(x, y, z, 83) < 0.04) blk = B.MOSSY;
-      bl[(y << 8) | base] = blk;
-    }
-    return;
-  }
-
-  // Canal River Bed & Water
+  // Canal River Bed & Water inside Wall Sina
   if (isCanal(x, z)) {
     if (isBridge(x, z)) {
-      // Arched stone bridge
       for (y = GROUND; y <= GROUND + 2; y++) bl[(y << 8) | base] = B.COBBLE;
-      bl[((GROUND + 3) << 8) | base] = B.STONEBRICK; // Bridge parapet
+      bl[((GROUND + 3) << 8) | base] = B.STONEBRICK;
       return;
     }
-    // Canal water with stone quays
     for (y = SEA + 1; y <= GROUND - 2; y++) bl[(y << 8) | base] = B.WATER;
     bl[((GROUND - 2) << 8) | base] = B.STONEBRICK;
     return;
   }
 
-  // Sunken Forum at (0, 0)
+  // Sunken Royal Forum & Palace Plaza at Mitras
   if (isForum(x, z)) {
-    var dForum = Math.sqrt(x * x + z * z);
-    if (dForum < 4.5) {
-      // Central shallow reflecting pool
+    var dForum = Math.hypot(x, z - SINA_CZ);
+    if (dForum < 5.5) {
       bl[(h << 8) | base] = B.STONEBRICK;
       bl[((h + 1) << 8) | base] = B.WATER;
-      if (dForum < 1.5) bl[((h + 2) << 8) | base] = B.STONEBRICK; // Center stone obelisk plinth
+      if (dForum < 2.0) bl[((h + 2) << 8) | base] = B.STONEBRICK; // Center monument plinth
       return;
     }
-    // Tiered concentric stone amphitheater
     bl[(h << 8) | base] = (Math.floor(dForum) % 3 === 0) ? B.STONEBRICK : B.COBBLE;
     return;
   }
 
-  // City Streets & Boulevards
+  // City Streets & Boulevards inside Wall Sina
   if (isStreet(x, z)) {
     bl[(h << 8) | base] = hash2(x, z, 83) < 0.6 ? B.PATH : B.COBBLE;
-    // Street lanterns along main avenue
-    if (Math.abs(x) === 4 && (z % 14 === 0) && z > 0) {
+    if (Math.abs(x) === 4 && (z % 14 === 0) && z > SINA_CZ) {
       for (y = h + 1; y <= h + 3; y++) bl[(y << 8) | base] = B.IRONBARS;
       bl[((h + 4) << 8) | base] = B.GOLD;
     }
     return;
   }
 
-  // Scout Practice & Stables Yard
+  // Scout Practice & Stables Yard in Northwest Wall Sina
   if (inYard(x, z)) {
     bl[(h << 8) | base] = B.DIRT_PATH;
-    var isEdge = x === YARD.x0 || x === YARD.x1 || z === YARD.z0 || z === YARD.z1;
-    if (isEdge) {
+    var isEdgeYard = x === YARD.x0 || x === YARD.x1 || z === YARD.z0 || z === YARD.z1;
+    if (isEdgeYard) {
       bl[((h + 1) << 8) | base] = B.TIMBER;
       if (((x + z) & 3) === 0) bl[((h + 2) << 8) | base] = B.TIMBER;
-    }
-    // Stables in yard
-    if (x >= YARD.x0 + 4 && x <= YARD.x0 + 16 && z >= YARD.z0 + 4 && z <= YARD.z0 + 20) {
-      var sx = x - (YARD.x0 + 4), sz = z - (YARD.z0 + 4);
-      if ((sx === 0 || sx === 12) && (sz % 4 === 0)) {
-        for (y = h + 1; y <= h + 4; y++) bl[(y << 8) | base] = B.LOG;
-      }
-      if (sz % 4 === 0 && sx < 10) bl[((h + 1) << 8) | base] = B.TIMBER;
-      if (sx >= 8 && sz % 4 === 2) bl[((h + 1) << 8) | base] = B.HAY;
-      bl[((h + 5) << 8) | base] = B.PLANKS;
-      return;
     }
     // High Tether Poles for grappling training
     for (var p = 0; p < POLES.length; p++) {
@@ -599,7 +728,7 @@ function districtColumn(bl, base, x, z, h) {
     return;
   }
 
-  // Medieval Townhouses
+  // Medieval Townhouses in Wall Sina (Living City)
   var li = Math.floor((x + LOT_OFF) / LOT), lj = Math.floor((z + LOT_OFF) / LOT);
   var u = x + LOT_OFF - li * LOT, v = z + LOT_OFF - lj * LOT;
   var H = houseFor(li, lj);
@@ -679,12 +808,12 @@ function fieldColumn(bl, base, x, z, h, forest) {
   var y;
   if (h <= SEA) return;
 
-  // Scorched Battlefield outside Wall Maria South Gate
-  if (z > 85 && z < 320 && Math.abs(x) < 140) {
+  // Scorched Battlefield outside Wall Rose South Gate
+  if (z > 248 && z < 420 && Math.abs(x) < 160) {
     var road = Math.abs(x + 0.5) < 5.0;
     if (road) { bl[(h << 8) | base] = B.DIRT_PATH; return; }
     // Titan boulder impact craters from Beast Titan
-    var inCrater = Math.hypot(x - 22, z - 130) < 8 || Math.hypot(x + 36, z - 180) < 10 || Math.hypot(x - 30, z - 225) < 12;
+    var inCrater = Math.hypot(x - 22, z - 280) < 9 || Math.hypot(x + 36, z - 330) < 11 || Math.hypot(x - 30, z - 380) < 13;
     if (inCrater) {
       bl[(h << 8) | base] = B.DIRT;
       if (hash2(x, z, 95) < 0.4) bl[((h + 1) << 8) | base] = B.COBBLE;
@@ -792,16 +921,20 @@ function placeSupply(bl, x0, z0) {
 
 /* ---- Minimap top-down color ---- */
 function mapColor(x, z) {
-  if (onWallRose(x, z)) return [200, 200, 210];
-  if (inWallRoseCity(x, z)) return [155, 145, 130];
-  if (z >= WALL_ROSE_Z && z <= INNER_Z && Math.abs(x) <= 4.0) return [170, 160, 145]; // Grand Highway
-  if (inDistrict(x, z) || onWall(x, z)) {
+  if (onWallRose(x, z)) return [205, 205, 215];
+  if (onWallSina(x, z)) return [215, 215, 225];
+  if (isHighway(x, z)) return [185, 175, 145];
+  if (isBreach(x, z)) return [160, 95, 80];
+  if (inTrost(x, z)) return [145, 130, 115];
+  if (inUtgard(x, z)) return [130, 130, 135];
+  if (inDauper(x, z)) return [140, 110, 75];
+
+  if (inWallSina(x, z)) {
     var t = towerAt(x, z);
-    if (t) return t.flat ? [150, 150, 158] : t.roof === B.ROOF_SLATE ? [70, 86, 120] : [168, 70, 52];
-    if (onWall(x, z)) return [180, 180, 186];
+    if (t) return t.flat ? [160, 160, 170] : t.roof === B.ROOF_SLATE ? [70, 86, 120] : [168, 70, 52];
     if (isCanal(x, z)) return isBridge(x, z) ? [150, 140, 122] : [52, 98, 190];
-    if (isForum(x, z)) return [170, 160, 145];
-    if (isStreet(x, z)) return [150, 140, 122];
+    if (isForum(x, z)) return [210, 200, 175];
+    if (isStreet(x, z)) return [155, 145, 128];
     if (inYard(x, z)) return [140, 112, 80];
 
     var li = Math.floor((x + LOT_OFF) / LOT), lj = Math.floor((z + LOT_OFF) / LOT);
@@ -811,8 +944,9 @@ function mapColor(x, z) {
       var ry = houseRoofY(u, v), sh = 0.75 + (ry - H.top) * 0.06;
       return H.roof === B.ROOF_RED ? [178 * sh, 72 * sh, 54 * sh] : [80 * sh, 96 * sh, 130 * sh];
     }
-    return [132, 126, 112];
+    return [135, 128, 115];
   }
+
   var h = groundH(x, z);
   if (h <= SEA) return [52, 98, 190];
   var gx = Math.floor(x / TCELL), gz = Math.floor(z / TCELL);
@@ -821,14 +955,14 @@ function mapColor(x, z) {
     if (!tr) continue;
     var dx = x - tr.x, dz = z - tr.z, d2 = dx * dx + dz * dz;
     if (d2 < tr.rt * tr.rt) return [96, 70, 44];
-    if (d2 < 15 * 15) return [34, 92, 40];
+    if (d2 < 16 * 16) return [34, 92, 40];
   }
   var wt = watchtower(Math.floor(x / WCELL), Math.floor(z / WCELL));
   if (wt && Math.abs(x - wt.x) < 4 && Math.abs(z - wt.z) < 4) return [130, 130, 134];
-  if (z > 85 && Math.abs(x + 0.5) < 4.5 && z < 320) return [150, 124, 86];
+  if (z > 248 && Math.abs(x + 0.5) < 4.5 && z < 400) return [150, 124, 86];
   var hs = (h - GROUND) * 2;
   if (h > GROUND + 30) return [128 + hs * 0.3, 128 + hs * 0.3, 132 + hs * 0.3];
-  return forestAt(x, z) ? [62 + hs, 120 + hs, 52 + hs] : [100 + hs, 158 + hs, 70 + hs];
+  return forestAt(x, z) ? [55 + hs, 110 + hs, 45 + hs] : [100 + hs, 158 + hs, 70 + hs];
 }
 
 /* Worker entry point */
@@ -859,6 +993,7 @@ if (typeof globalThis !== 'undefined') {
   globalThis.WALL_ROSE_TOP = WALL_ROSE_TOP;
   globalThis.DR = DR;
   globalThis.WALL_ROSE_Z = WALL_ROSE_Z;
+  globalThis.WALL_SINA_Z = 14;
   globalThis.WALL_MARIA_Z = WALL_MARIA_Z;
 }
 if (typeof window !== 'undefined') {
@@ -876,8 +1011,14 @@ if (typeof window !== 'undefined') {
   window.WALL_ROSE_TOP = WALL_ROSE_TOP;
   window.DR = DR;
   window.WALL_ROSE_Z = WALL_ROSE_Z;
+  window.WALL_SINA_Z = 14;
   window.WALL_MARIA_Z = WALL_MARIA_Z;
 }
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { initGen: initGen, generateChunk: generateChunk, groundH: groundH, mapColor: mapColor, outwork: outwork, outworkAt: outworkAt, B: B, BIOME: BIOME, supplyY: supplyY, GROUND: GROUND, WALL_TOP: WALL_TOP, WALL_ROSE_TOP: WALL_ROSE_TOP, DR: DR, WALL_ROSE_Z: WALL_ROSE_Z, WALL_MARIA_Z: WALL_MARIA_Z };
+  module.exports = {
+    initGen: initGen, generateChunk: generateChunk, groundH: groundH, mapColor: mapColor,
+    outwork: outwork, outworkAt: outworkAt, B: B, BIOME: BIOME, supplyY: supplyY,
+    GROUND: GROUND, WALL_TOP: WALL_TOP, WALL_ROSE_TOP: WALL_ROSE_TOP, DR: DR,
+    WALL_ROSE_Z: WALL_ROSE_Z, WALL_SINA_Z: 14, WALL_MARIA_Z: WALL_MARIA_Z
+  };
 }
