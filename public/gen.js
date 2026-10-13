@@ -224,34 +224,22 @@ function onWallSina(x, z) {
   // Ehrmich outer walls (South)
   if (z >= EHRMICH.z0 && z <= EHRMICH.z1) {
     if (Math.abs(x - EHRMICH.x0) < WALL_T || Math.abs(x - EHRMICH.x1) < WALL_T) return true;
-    if (z >= EHRMICH.z1 - WALL_T && z <= EHRMICH.z1) {
-      if (Math.abs(x) <= 5.5) return false; // Grand Departure Gate archway
-      return true;
-    }
+    if (z >= EHRMICH.z1 - WALL_T && z <= EHRMICH.z1) return true; // Continuous rampart over Grand Departure Gate
   }
   // Utopia outer walls (North)
   if (z >= UTOPIA.z0 && z <= UTOPIA.z1) {
     if (Math.abs(x - UTOPIA.x0) < WALL_T || Math.abs(x - UTOPIA.x1) < WALL_T) return true;
-    if (z <= UTOPIA.z0 + WALL_T && z >= UTOPIA.z0) {
-      if (Math.abs(x) <= 5.5) return false;
-      return true;
-    }
+    if (z <= UTOPIA.z0 + WALL_T && z >= UTOPIA.z0) return true;
   }
   // Stohess outer walls (East)
   if (x >= STOHESS.x0 && x <= STOHESS.x1) {
     if (Math.abs(z - STOHESS.z0) < WALL_T || Math.abs(z - STOHESS.z1) < WALL_T) return true;
-    if (x >= STOHESS.x1 - WALL_T && x <= STOHESS.x1) {
-      if (Math.abs(z - SINA_CZ) <= 5.5) return false;
-      return true;
-    }
+    if (x >= STOHESS.x1 - WALL_T && x <= STOHESS.x1) return true;
   }
   // Yarckel outer walls (West)
   if (x >= YARCKEL.x0 && x <= YARCKEL.x1) {
     if (Math.abs(z - YARCKEL.z0) < WALL_T || Math.abs(z - YARCKEL.z1) < WALL_T) return true;
-    if (x <= YARCKEL.x0 + WALL_T && x >= YARCKEL.x0) {
-      if (Math.abs(z - SINA_CZ) <= 5.5) return false;
-      return true;
-    }
+    if (x <= YARCKEL.x0 + WALL_T && x >= YARCKEL.x0) return true;
   }
   return false;
 }
@@ -260,8 +248,7 @@ function onWall(x, z) { return onWallSina(x, z); }
 function onWallRose(x, z) {
   // Main southern monolithic line of Wall Rose at z = WALL_ROSE_Z
   if (Math.abs(x) <= WALL_ROSE_HW && z <= WALL_ROSE_Z && z >= WALL_ROSE_Z - WALL_T) {
-    if (Math.abs(x) <= 8.5) return false; // Monumental avenue arch into Trost
-    return true;
+    return true; // Continuous rampart over monumental avenue arch
   }
   // Trost District flanking walls
   if (z >= WALL_ROSE_Z && z <= TROST.z1) {
@@ -570,7 +557,13 @@ function districtColumn(bl, base, x, z, h) {
 
   // Monolithic Wall Rose (Highest Peak Citadel) - 100% FLAT TOP
   if (onWallRose(x, z)) {
-    for (y = GROUND + 1; y <= WALL_TOP; y++) {
+    var isRoseArch = Math.abs(x) <= 8.5 && z <= WALL_ROSE_Z && z >= WALL_ROSE_Z - WALL_T;
+    var startYRose = isRoseArch ? GROUND + 9 : GROUND + 1;
+    if (isRoseArch) {
+      bl[(GROUND << 8) | base] = B.COBBLE;
+      for (y = GROUND + 1; y < startYRose; y++) bl[(y << 8) | base] = B.AIR;
+    }
+    for (y = startYRose; y <= WALL_TOP; y++) {
       var rBlk = (y % 3 === 0) ? B.STONEBRICK : B.STONE;
       if (hash3(x, y, z, 86) < 0.06) rBlk = B.COBBLE;
       bl[(y << 8) | base] = rBlk;
@@ -583,7 +576,16 @@ function districtColumn(bl, base, x, z, h) {
 
   // Colossal Monolithic Wall Sina - 100% FLAT TOP
   if (onWallSina(x, z)) {
-    for (y = GROUND + 1; y <= WALL_TOP; y++) {
+    var isGateTunnel = (z >= EHRMICH.z1 - WALL_T && z <= EHRMICH.z1 && Math.abs(x) <= 5.5) ||
+                       (z >= UTOPIA.z0 && z <= UTOPIA.z0 + WALL_T && Math.abs(x) <= 5.5) ||
+                       (x >= STOHESS.x1 - WALL_T && x <= STOHESS.x1 && Math.abs(z - SINA_CZ) <= 5.5) ||
+                       (x <= YARCKEL.x0 + WALL_T && x >= YARCKEL.x0 && Math.abs(z - SINA_CZ) <= 5.5);
+    var startY = isGateTunnel ? GROUND + 8 : GROUND + 1;
+    if (isGateTunnel) {
+      bl[(GROUND << 8) | base] = B.COBBLE;
+      for (y = GROUND + 1; y < startY; y++) bl[(y << 8) | base] = B.AIR;
+    }
+    for (y = startY; y <= WALL_TOP; y++) {
       var blk = B.STONEBRICK;
       if (hash3(x, y, z, 82) < 0.08) blk = B.COBBLE;
       else if (hash3(x, y, z, 83) < 0.04) blk = B.MOSSY;
