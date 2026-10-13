@@ -877,14 +877,21 @@ function escapeGrab(t) {
   bigMsg('ESCAPED!', 'Cut your way free', '#aef', 1.3); addScore(300, 'ESCAPE');
 }
 function die(reason, killer) {
-  if (!P.alive) return;
+  if (!P.alive && gameState === 'dead') return;
   P.alive = false; P.deadT = 0; detachAll();
-  P.boosting = false; P.braking = false;
-  slowT = slowDur = 1.0; Sfx.death(); Music.target = 0.1;
+  P.boosting = false; P.braking = false; P.reeling = false;
+  slowT = slowDur = 1.0;
+  try {
+    if (Sfx.death) Sfx.death();
+    else if (Sfx.failSting) Sfx.failSting();
+  } catch (e) {
+    console.warn('Audio death sound error:', e);
+  }
+  Music.target = 0.1;
   if (P.grabbedBy) { if (!P.grabbedBy.remote) P.grabbedBy.holding = null; P.grabbedBy = null; $('grab').classList.remove('show'); }
   const k = killer || (G.time - P.lastHurt < 6 ? P.lastAttacker : null);
   if (G.mode === 'mp') { if (G.hooks.localDied) G.hooks.localDied(reason, k); return; }
-  setTimeout(() => { showDeath(reason); }, 800);
+  setTimeout(() => { showDeath(reason); }, 400);
 }
 window.__die = die;
 
@@ -1759,7 +1766,7 @@ function resetPlayer(spawn) {
   P.pos.set(spawn.x + 0.5, spawn.y, spawn.z + 0.5); P.vel.set(0, 0, 0);
   P.yaw = spawn.yaw || 0; P.pitch = -0.1;
   P.onGround = true;
-  Object.assign(P, { alive: true, hp: 100, gas: 100, sharp: 100, spare: 8, swapT: 0, grabbedBy: null, invuln: 0, slashT: -1, spinT: -1, swingT: -1, drawn: false, cutSpinT: -1, lungeT: 0, slashCD: 0, combo: 0, chainT: 0, bestCombo: 0, kills: 0, score: 0, frozen: true, stunT: 0, maxSpeed: 0, deadT: 0, hitT: 0, lastKillT: -99, jamT: 0, lastAttacker: null, lastHurt: -99, braking: false, brace: 0, boosting: false });
+  Object.assign(P, { alive: true, hp: 100, gas: 100, sharp: 100, spare: 8, swapT: 0, grabbedBy: null, invuln: 3.0, slashT: -1, spinT: -1, swingT: -1, drawn: false, cutSpinT: -1, lungeT: 0, slashCD: 0, combo: 0, chainT: 0, bestCombo: 0, kills: 0, score: 0, frozen: true, stunT: 0, maxSpeed: 0, deadT: 0, hitT: 0, lastKillT: -99, jamT: 0, lastAttacker: null, lastHurt: -99, braking: false, brace: 0, boosting: false, reeling: false });
   for (const a of P.anchors) { a.state = 'idle'; a.held = false; a.cable.hide(); }
   $('grab').classList.remove('show');
   camTarget.copy(P.pos);
@@ -1849,9 +1856,18 @@ function failMission(reason) {
 function showDeath(reason, failed) {
   gameState = 'dead';
   document.exitPointerLock && document.exitPointerLock();
-  $('deathtitle').textContent = failed ? 'MISSION FAILED' : 'YOU HAVE FALLEN';
-  $('deathreason').textContent = reason || '';
-  show('death'); Sfx.failSting(); Music.target = 0.1;
+  P.alive = false; P.boosting = false; P.braking = false; P.reeling = false;
+  if (G.localTitan) {
+    G.localTitan.remove();
+    G.localTitan = null;
+  }
+  mpSetTitanMode(null);
+  document.body.classList.remove('titanmode');
+  $('deathtitle').textContent = failed ? 'MISSION FAILED' : 'YOU ARE DEAD';
+  $('deathreason').textContent = reason || 'Slain in battle beyond the walls';
+  show('death');
+  try { if (Sfx.failSting) Sfx.failSting(); } catch (e) { /* audio fallback */ }
+  Music.target = 0.1;
 }
 function pauseGame() {
   if (gameState !== 'play') return;
@@ -1956,84 +1972,146 @@ function renderTacticalMap() {
   ctx.clearRect(0, 0, w, h);
 
   // Antique military parchment / slate background
-  ctx.fillStyle = '#172016';
+  ctx.fillStyle = '#141d16';
   ctx.fillRect(0, 0, w, h);
 
-  // Coordinate mapping: X [-160, 160], Z [-180, 120]
-  const minX = -160, maxX = 160;
-  const minZ = -180, maxZ = 120;
+  // Phase Two Coordinate mapping: X [-180, 180], Z [-220, 280] (Canonical AoT Scale)
+  const minX = -180, maxX = 180;
+  const minZ = -220, maxZ = 280;
   const toX = (x) => ((x - minX) / (maxX - minX)) * w;
   const toY = (z) => ((z - minZ) / (maxZ - minZ)) * h;
 
   // Tactical Grid Lines
-  ctx.strokeStyle = 'rgba(232, 196, 106, 0.1)';
+  ctx.strokeStyle = 'rgba(232, 196, 106, 0.08)';
   ctx.lineWidth = 1;
-  for (let gx = -120; gx <= 120; gx += 40) {
+  for (let gx = -160; gx <= 160; gx += 40) {
     ctx.beginPath(); ctx.moveTo(toX(gx), 0); ctx.lineTo(toX(gx), h); ctx.stroke();
   }
-  for (let gz = -160; gz <= 100; gz += 40) {
+  for (let gz = -200; gz <= 260; gz += 40) {
     ctx.beginPath(); ctx.moveTo(0, toY(gz)); ctx.lineTo(w, toY(gz)); ctx.stroke();
   }
 
-  // The Grand Highway (connecting Wall Rose z=-105 to Wall Maria z=84)
-  ctx.strokeStyle = 'rgba(230, 200, 130, 0.4)';
-  ctx.lineWidth = 5;
+  // Giant Pine Forests (Titan Forest zones)
+  ctx.fillStyle = 'rgba(28, 70, 36, 0.45)';
+  ctx.fillRect(toX(-145), toY(20), toX(-45) - toX(-145), toY(185) - toY(20));
+  ctx.fillRect(toX(45), toY(20), toX(145) - toX(45), toY(185) - toY(20));
+  ctx.fillStyle = 'rgba(120, 220, 140, 0.35)';
+  ctx.font = 'bold 9px Oswald, sans-serif';
+  ctx.fillText('GIANT PINE FOREST', toX(-95), toY(100));
+  ctx.fillText('GIANT PINE FOREST', toX(95), toY(100));
+
+  // Dauper Village & Utgard Castle
+  ctx.fillStyle = 'rgba(180, 140, 80, 0.7)';
+  ctx.fillRect(toX(-85), toY(45), toX(-50) - toX(-85), toY(80) - toY(45));
+  ctx.fillStyle = '#ffd36a';
+  ctx.font = '9px Oswald, sans-serif';
+  ctx.fillText('DAUPER VILLAGE', toX(-68), toY(62));
+
+  ctx.fillStyle = 'rgba(140, 140, 150, 0.8)';
+  ctx.fillRect(toX(-115), toY(115), toX(-92) - toX(-115), toY(138) - toY(115));
+  ctx.fillStyle = '#e0e0e0';
+  ctx.fillText('UTGARD CASTLE', toX(-104), toY(128));
+
+  // The Grand Royal Expedition Highway (connecting Wall Sina z=14 to Wall Rose z=196)
+  ctx.strokeStyle = 'rgba(232, 205, 140, 0.65)';
+  ctx.lineWidth = 4;
   ctx.beginPath();
-  ctx.moveTo(toX(0), toY(-105));
-  ctx.lineTo(toX(0), toY(84));
+  ctx.moveTo(toX(0), toY(14));
+  ctx.lineTo(toX(0), toY(196));
   ctx.stroke();
 
-  // Wall Rose Northern Citadel (z = -105 to -165, x = -60 to 60)
+  // Wall Sina (Inner Living City - Center (0, -100), Radius 76)
+  const sinaCenterX = toX(0), sinaCenterY = toY(-100);
+  const sinaRadX = (76 / (maxX - minX)) * w;
+  const sinaRadY = (76 / (maxZ - minZ)) * h;
+
+  // Wall Sina 4 Cardinal Bastion Districts:
+  // Utopia (North), Ehrmich (South), Stohess (East), Yarckel (West)
+  ctx.fillStyle = 'rgba(30, 65, 45, 0.55)';
+  ctx.strokeStyle = '#7dffb0';
+  ctx.lineWidth = 2.5;
+
+  // Ehrmich District (South Gate Departure)
+  ctx.fillRect(toX(-28), toY(-28), toX(28) - toX(-28), toY(14) - toY(-28));
+  ctx.strokeRect(toX(-28), toY(-28), toX(28) - toX(-28), toY(14) - toY(-28));
+  // Utopia District (North)
+  ctx.fillRect(toX(-28), toY(-214), toX(28) - toX(-28), toY(-172) - toY(-214));
+  ctx.strokeRect(toX(-28), toY(-214), toX(28) - toX(-28), toY(-172) - toY(-214));
+  // Stohess District (East)
+  ctx.fillRect(toX(72), toY(-128), toX(114) - toX(72), toY(-72) - toY(-128));
+  ctx.strokeRect(toX(72), toY(-128), toX(114) - toX(72), toY(-72) - toY(-128));
+  // Yarckel District (West)
+  ctx.fillRect(toX(-114), toY(-128), toX(-72) - toX(-114), toY(-72) - toY(-128));
+  ctx.strokeRect(toX(-114), toY(-128), toX(-72) - toX(-114), toY(-72) - toY(-128));
+
+  // Wall Sina Circular Sanctuary
+  ctx.beginPath();
+  ctx.ellipse(sinaCenterX, sinaCenterY, sinaRadX, sinaRadY, 0, 0, Math.PI * 2);
   ctx.fillStyle = 'rgba(35, 75, 45, 0.45)';
-  ctx.fillRect(toX(-60), toY(-165), toX(60) - toX(-60), toY(-105) - toY(-165));
+  ctx.fill();
   ctx.strokeStyle = '#7dffb0';
   ctx.lineWidth = 3;
-  ctx.strokeRect(toX(-60), toY(-165), toX(60) - toX(-60), toY(-105) - toY(-165));
-
-  // Wall Rose Citadel Crest & Labels
-  ctx.fillStyle = '#7dffb0';
-  ctx.font = 'bold 12px Oswald, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('WALL ROSE CITADEL (HIGHEST PEAK: 86M)', toX(0), toY(-138));
-  ctx.font = '10px Oswald, sans-serif';
-  ctx.fillStyle = '#a8f0b0';
-  ctx.fillText('HUMANITY SANCTUARY & GARRISON BARRACKS', toX(0), toY(-124));
-
-  // The Great Plains (z = -105 to -55)
-  ctx.fillStyle = 'rgba(216, 207, 184, 0.45)';
-  ctx.font = '11px Oswald, sans-serif';
-  ctx.fillText('THE SCORCHED EXPEDITION PLAINS', toX(0), toY(-15));
-
-  // Wall Maria Southern Fortress (z = -55 to 84, x = -60 to 60)
-  ctx.fillStyle = 'rgba(85, 35, 25, 0.45)';
-  ctx.fillRect(toX(-60), toY(-55), toX(60) - toX(-60), toY(84) - toY(-55));
-  ctx.strokeStyle = '#ff6a5a';
-  ctx.lineWidth = 3;
-  ctx.strokeRect(toX(-60), toY(-55), toX(60) - toX(-60), toY(84) - toY(-55));
-
-  // Southern Breach Gate (z = 84, x = 0)
-  ctx.strokeStyle = '#ffd36a';
-  ctx.lineWidth = 5;
-  ctx.beginPath();
-  ctx.moveTo(toX(-12), toY(84));
-  ctx.lineTo(toX(12), toY(84));
   ctx.stroke();
 
-  // Wall Maria Labels
+  // Mitras Royal Palace Keep at Center
+  ctx.fillStyle = '#ffd36a';
+  ctx.fillRect(sinaCenterX - 7, sinaCenterY - 7, 14, 14);
+
+  // Wall Sina Labels
+  ctx.fillStyle = '#7dffb0';
+  ctx.font = 'bold 11px Oswald, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('WALL SINA · ROYAL CAPITAL (MITRAS)', sinaCenterX, sinaCenterY - 14);
+  ctx.font = '9px Oswald, sans-serif';
+  ctx.fillStyle = '#a8f0b0';
+  ctx.fillText('HUMAN TERRITORY & CITIZEN RESIDENCES', sinaCenterX, sinaCenterY + 20);
+  ctx.fillText('EHRMICH DEPARTURE GATE', toX(0), toY(8));
+
+  // The Grand Expedition Field Label
+  ctx.fillStyle = 'rgba(216, 207, 184, 0.55)';
+  ctx.font = '10px Oswald, sans-serif';
+  ctx.fillText('THE GRAND EXPEDITION FIELD (~235M SCALE)', toX(0), toY(110));
+
+  // Wall Rose Southern Fortress (z = 196, Monolithic Line)
+  ctx.strokeStyle = '#ff6a5a';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(toX(-140), toY(196));
+  ctx.lineTo(toX(-36), toY(196));
+  ctx.moveTo(toX(36), toY(196));
+  ctx.lineTo(toX(140), toY(196));
+  ctx.stroke();
+
+  // Trost District Bastion (z = 196 to 248, x = -36 to 36)
+  ctx.fillStyle = 'rgba(95, 35, 25, 0.55)';
+  ctx.fillRect(toX(-36), toY(196), toX(36) - toX(-36), toY(248) - toY(196));
+  ctx.strokeStyle = '#ff6a5a';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(toX(-36), toY(196), toX(36) - toX(-36), toY(248) - toY(196));
+
+  // Smashed Trost Outer Gate Breach (z = 246, x = 0)
+  ctx.strokeStyle = '#ffd36a';
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.moveTo(toX(-12), toY(246));
+  ctx.lineTo(toX(12), toY(246));
+  ctx.stroke();
+
+  // Wall Rose Labels
   ctx.fillStyle = '#ff6a5a';
-  ctx.font = 'bold 12px Oswald, sans-serif';
-  ctx.fillText('WALL MARIA (BREACHED DISTRICT)', toX(0), toY(15));
+  ctx.font = 'bold 11px Oswald, sans-serif';
+  ctx.fillText('WALL ROSE · TROST DISTRICT', toX(0), toY(215));
   ctx.fillStyle = '#ffd36a';
   ctx.font = '10px Oswald, sans-serif';
-  ctx.fillText('SHIGANSHINA BREACH GATE [PRIMARY OBJECTIVE]', toX(0), toY(76));
+  ctx.fillText('COLOSSAL BREACH [TITAN INVASION FRONT]', toX(0), toY(240));
 
-  // Supply Depots
+  // Strategic Supply Depots
   for (const d of depots) {
     ctx.fillStyle = '#6ff3ff';
     ctx.fillRect(toX(d.x) - 3, toY(d.z) - 3, 6, 6);
   }
 
-  // Titans
+  // Roaming & Boss Titans
   for (const t of G.titans) {
     if (!t.alive || t === G.localTitan) continue;
     const tx = toX(t.pos.x), ty = toY(t.pos.z);
@@ -2046,7 +2124,7 @@ function renderTacticalMap() {
     ctx.stroke();
   }
 
-  // Active Horse
+  // Active Military Steed
   const steed = getActiveHorse();
   if (steed && !steed.removed) {
     const hx = toX(steed.pos.x), hy = toY(steed.pos.z);
@@ -2078,11 +2156,12 @@ function renderTacticalMap() {
   ctx.restore();
 
   // Real-time Distances & Coordinates
-  const distRose = Math.round(P.pos.distanceTo(new THREE.Vector3(0, 86, -135)));
-  const distMaria = Math.round(P.pos.distanceTo(new THREE.Vector3(0, 46, 84)));
-  if ($('stat-dist-rose')) $('stat-dist-rose').innerHTML = `Distance to Wall Rose: <b style="color:#7dffb0">${distRose}m</b>`;
-  if ($('stat-dist-maria')) $('stat-dist-maria').innerHTML = `Distance to Wall Maria: <b style="color:#ff6a5a">${distMaria}m</b>`;
-  if ($('stat-steed')) $('stat-steed').innerHTML = `Steed Status: <b style="color:#ffd36a">${P.mounted ? 'MOUNTED' : (steed && !steed.removed ? 'READY NEARBY' : 'AWAITING DISPATCH')}</b>`;
+  const distSina = Math.round(P.pos.distanceTo(new THREE.Vector3(0, 86, 14)));
+  const distRose = Math.round(P.pos.distanceTo(new THREE.Vector3(0, 46, 246)));
+  if ($('stat-dist-sina')) $('stat-dist-sina').innerHTML = `Distance to Wall Sina: <b style="color:#7dffb0">${distSina}m</b>`;
+  if ($('stat-dist-maria')) $('stat-dist-maria').innerHTML = `Distance to Wall Sina: <b style="color:#7dffb0">${distSina}m</b>`;
+  if ($('stat-dist-rose')) $('stat-dist-rose').innerHTML = `Distance to Wall Rose: <b style="color:#ff6a5a">${distRose}m</b>`;
+  if ($('stat-steed')) $('stat-steed').innerHTML = `Steed Status: <b style="color:#ffd36a">${P.mounted ? 'MOUNTED' : (steed && !steed.removed ? 'READY ON GROUND' : 'AWAITING DISPATCH')}</b>`;
   if ($('stat-coords')) $('stat-coords').innerHTML = `Coordinates: <b>X: ${Math.round(P.pos.x)} | Y: ${Math.round(P.pos.y)} | Z: ${Math.round(P.pos.z)}</b>`;
 }
 
@@ -2184,6 +2263,7 @@ initTouch({
     P.pitch = Math.max(-1.5, Math.min(1.5, P.pitch));
   },
   pause: () => pauseGame(),
+  map: () => toggleTacticalMap(),
   board: () => { if (MP.active) setBoard(!MP.boardOpen); },
   chat: () => { if (G.chatOpen) G.chatOpen(); },
   grabbed: () => !!P.grabbedBy,
@@ -2192,9 +2272,22 @@ initTouch({
   changed: () => { lastHud = {}; $('touchon').checked = TOUCH.on; if (!TOUCH.on && gameState === 'play') toast('Click to aim', 1.6); },
   state: () => {
     const t = G.localTitan;
-    return { play: gameState === 'play', titan: !!t, mp: !!MP.active && G.mode === 'mp', chat: !!(G.chatAvail && G.chatAvail()), gunner: P.faction === 'interior', use: !!(G.mission && G.mission.interact) && G.mode !== 'mp',
-      strike: NS.state === 'strike', hooked: P.anchors.some(a => a.state === 'attached'), anchors: [P.anchors[0].state === 'attached', P.anchors[1].state === 'attached'],
-      targets: [TAIM[0].valid, TAIM[1].valid], dull: P.sharp < 25 && P.spare > 0 };
+    const steed = getActiveHorse();
+    return {
+      play: gameState === 'play',
+      titan: !!t,
+      mp: !!MP.active && G.mode === 'mp',
+      chat: !!(G.chatAvail && G.chatAvail()),
+      gunner: P.faction === 'interior',
+      use: !!(G.mission && G.mission.interact) && G.mode !== 'mp',
+      horse: P.mounted || (steed && steed.isPlayerNear(P, 6.0)),
+      mounted: P.mounted,
+      strike: NS.state === 'strike',
+      hooked: P.anchors.some(a => a.state === 'attached'),
+      anchors: [P.anchors[0].state === 'attached', P.anchors[1].state === 'attached'],
+      targets: [TAIM[0].valid, TAIM[1].valid],
+      dull: P.sharp < 25 && P.spare > 0
+    };
   }
 });
 // phones: a lighter start (the dynamic scaler still adjusts), a shorter view, and pause single player when the app is backgrounded
@@ -2344,8 +2437,17 @@ function frame(now) {
   drawSpeedLines(Math.max(0, Math.min(1, (speed - 20) / 35)) * (P.fp ? 1 : 0.85), flashA, sk);
   if (gameState === 'play' || gameState === 'done' || (mpLive && gameState === 'mpend')) { updateHUD(rawDt); drawMinimap(); if (G.localTitan) pilotHud(G.localTitan, rawDt); }
   // audio
-  let steamAmt = 0; for (const t of G.titans) if (t.state === 'dissolve' && t.pos.distanceTo(P.pos) < 60) steamAmt += 1;
-  Sfx.update(rawDt, { speed, boost: (P.boosting || (P.braking && P.vel.length() > 3)) && gameState === 'play', reel: P.reeling ? 1 : (attachedAnchors().length && P.gas > 0 ? 0.15 : 0), alt: P.pos.y - 46, steam: steamAmt, muffle: gameState === 'pause' });
+  let steamAmt = 0;
+  for (const t of G.titans) if (t.state === 'dissolve' && t.pos.distanceTo(P.pos) < 60) steamAmt += 1;
+  const isPlaying = gameState === 'play' && P.alive;
+  Sfx.update(rawDt, {
+    speed: isPlaying ? speed : 0,
+    boost: isPlaying && (P.boosting || (P.braking && P.vel.length() > 3)),
+    reel: isPlaying ? (P.reeling ? 1 : (attachedAnchors().length && P.gas > 0 ? 0.15 : 0)) : 0,
+    alt: P.pos.y - 46,
+    steam: steamAmt,
+    muffle: gameState === 'pause' || gameState === 'dead'
+  });
   if (gameState === 'loading') {
     const p = meshedAround(3);
     $('loadpct').textContent = Math.round(p * 100) + '%';
@@ -2353,7 +2455,7 @@ function frame(now) {
   if (gameState === 'brief') { const p = meshedAround(3); $('beginbtn').textContent = p >= 0.99 ? 'Begin Mission' : `Preparing district… ${Math.round(p * 100)}%`; }
   // dynamic resolution to hold 60fps
   dynT += rawDt;
-  if (dynT > 2) { dynT = 0; const pr = renderer.getPixelRatio(), lo = TOUCH.on ? 0.6 : 0.75, hi = Math.min(window.devicePixelRatio, TOUCH.on ? 1.5 : 1.25); if (fps < 50 && pr > lo) renderer.setPixelRatio(Math.max(lo, pr - 0.15)); else if (fps > 58 && pr < hi) renderer.setPixelRatio(Math.min(pr + 0.1, hi)); }
+  if (dynT > 2) { dynT = 0; const pr = renderer.getPixelRatio(), lo = TOUCH.on ? 0.65 : 0.75, hi = Math.min(window.devicePixelRatio, TOUCH.on ? 1.15 : 1.25); if (fps < 50 && pr > lo) renderer.setPixelRatio(Math.max(lo, pr - 0.15)); else if (fps > 58 && pr < hi) renderer.setPixelRatio(Math.min(pr + 0.1, hi)); }
   if (showDebug && MP.active && MP.net) {
     MP.net.measure = true;
     const N = MP.net.stats, now = performance.now();
@@ -2369,7 +2471,7 @@ function frame(now) {
 }
 
 /* ---------------------------------------------------------------- boot */
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, TOUCH.on ? 1.5 : 1.25));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, TOUCH.on ? 1.15 : 1.25));
 setupWorkers();
 startWorld(WORLD_SEED);
 setupDepots();

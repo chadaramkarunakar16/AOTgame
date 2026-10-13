@@ -1,6 +1,6 @@
 /* =========================================================================
-   Missions: tutorial → defend the district → rescue → ring race → boss,
-   plus Free Roam. Each mission is a small state machine driven by update().
+   Missions: Phase Two Canonical Two-Wall Expedition Architecture
+   Wall Sina (Human Territory) & Wall Rose (Breached Trost Bastion)
    ========================================================================= */
 import { THREE, scene, camera, getBlock, SOLID, chunkReady } from './engine.js';
 import { Sfx, Music } from './audio.js';
@@ -12,48 +12,48 @@ import { spawnHorse, clearHorses } from './horses.js';
 import { G } from './state.js';
 
 const W = typeof window !== 'undefined' ? window : {};
-const DR = W.DR || 84, GROUND = W.GROUND || 46, WALL_TOP = W.WALL_TOP || 76;
+const DR = W.DR || 246, GROUND = W.GROUND || 46, WALL_TOP = W.WALL_TOP || 86;
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const _v = V(), _w = V(), _p1 = V(), _p2 = V();
 const CAPTAIN = 'Commander Erwin Smith';
 
 export const MISSIONS = [
-  // ---- STORY MODE: RECLAMATION OF WALL MARIA (BATTLE OF SHIGANSHINA) ----
-  { id: 'story_shiganshina', name: 'Operation: Return to Wall Maria', sub: 'Chapter I · The Silent District', art: 'm1.jpg', time: 0.10,
-    spawn: { x: 0, y: WALL_TOP + 1.2, z: -55, yaw: 0 },
-    brief: `Scouts — today we begin <b>Operation: Return to Wall Maria</b>. The ruins of Shiganshina are eerily quiet, but aggressive Pure Titans lurk along the canal and central avenue. <b>Ride on horseback [H]</b>, eliminate 6 roaming Titans, and secure the breached Outer Gate.`,
-    objectives: ['Ride military horse into Shiganshina [H]', 'Eliminate 6 aggressive Titans in the district', 'Reach the breached Outer Gate to secure camp'],
+  // ---- STORY MODE: OPERATION DEFENSE & RECLAMATION OF WALL ROSE ----
+  { id: 'story_shiganshina', name: 'Operation: Advance to Wall Rose', sub: 'Chapter I · Departure from Wall Sina', art: 'm1.jpg', time: 0.10,
+    spawn: { x: 0, y: WALL_TOP + 1.2, z: 12, yaw: 0 },
+    brief: `Scouts — Wall Rose has been breached at Trost District! Pure Titans are surging through the smashed outer gate and threaten to reach Wall Sina. <b>Mount your military steed [H]</b>, ride south across the <b>Grand Expedition Field (~235m)</b>, eliminate 6 invading Pure Titans in Trost, and secure the breached Outer Gate!`,
+    objectives: ['Ride military horse south on the Grand Highway [H]', 'Eliminate 6 invading Titans in Trost District', 'Secure the breached Trost Outer Gate'],
     ranks: [8000, 5000, 2500], outro: 'The forward camp is secure. Prepare for the enemy ambush.' },
   { id: 'story_armored', name: 'Clash of the Armored Titan', sub: 'Chapter II · The Iron Fortress (Reiner)', art: 'm2.jpg', time: 0.16,
-    spawn: { x: 0, y: WALL_TOP + 1.2, z: -55, yaw: 0 },
-    brief: `<b>The Armored Titan ambushes from the rooftops!</b> His segmented armor plates turn standard blades. Break his glowing knee joints, strike his nape with maximum speed, or <b>press T to transform into the Attack Titan</b> and brawl him in the streets!`,
-    objectives: ['Defeat the Armored Titan', 'Break his knee armor or brawl in Titan Form (T)', 'Protect the forward lines'],
+    spawn: { x: 0, y: WALL_TOP + 1.2, z: 12, yaw: 0 },
+    brief: `<b>The Armored Titan ambushes from the ruins of Trost!</b> His segmented armor plates turn standard blades. Gallop down the Grand Highway, break his glowing knee joints, strike his nape with maximum velocity, or <b>press [T] to transform into the Attack Titan</b> and brawl him in the streets!`,
+    objectives: ['Defeat the Armored Titan in Trost ruins', 'Break his knee armor or brawl in Titan Form (T)', 'Protect the forward lines'],
     ranks: [14000, 9000, 5000], outro: 'Reiner has been repelled! But a greater danger approaches…' },
   { id: 'story_colossal', name: 'The God of Destruction', sub: 'Chapter III · The Colossal Explosion (Bertholdt)', art: 'm3.jpg', time: 0.48,
-    spawn: { x: 0, y: WALL_TOP + 1.2, z: -55, yaw: 0 },
-    brief: `A cataclysmic flash tears through the sky! The <b>34-meter Colossal Titan</b> has manifested atop Wall Maria! The district is consumed by flames and boiling steam. <b>Evade the scalding steam</b>, scale the colossal walls, distract the titan, and cut his exposed nape between steam vents!`,
-    objectives: ['Survive the boiling steam blasts', 'Scale Wall Maria\'s high ramparts', 'Strike the exposed nape to bring down the Colossal Titan'],
-    ranks: [24000, 16000, 9000], outro: 'The Colossal Titan has fallen. The smoke clears over Wall Maria.' },
+    spawn: { x: 0, y: WALL_TOP + 1.2, z: 12, yaw: 0 },
+    brief: `A cataclysmic flash tears through the southern horizon! The <b>34-meter Colossal Titan</b> has manifested atop Wall Rose! The district is consumed by boiling steam and flames. <b>Evade the scalding steam</b>, scale Wall Rose's high ramparts, distract the titan, and cut his exposed nape between steam vents!`,
+    objectives: ['Gallop south to Wall Rose on horseback [H]', 'Evade boiling steam blasts', 'Scale the colossal rampart and strike the nape'],
+    ranks: [24000, 16000, 9000], outro: 'The Colossal Titan has fallen. The smoke clears over Wall Rose.' },
   { id: 'story_beast', name: 'The Beast\'s Artillery', sub: 'Chapter IV · The Final Charge (Zeke)', art: 'm4.jpg', time: 0.12,
-    spawn: { x: 0, y: WALL_TOP + 1.2, z: -55, yaw: 0 },
-    brief: `Outside Wall Maria on the southern plains, the <b>Beast Titan</b> stands flanked by pure titans, hurling crushed boulders at supersonic speeds! <b>Lead the cavalry charge on horseback [H]</b>, dodge the crushing boulder barrages using smoke flares for cover, slice through his escort titans, and slay the Beast Titan!`,
+    spawn: { x: 0, y: WALL_TOP + 1.2, z: 196, yaw: 0 },
+    brief: `Outside Wall Rose on the southern plains, the <b>Beast Titan</b> stands flanked by pure titans, hurling crushed boulders at supersonic speeds! <b>Lead the cavalry charge on horseback [H]</b>, dodge the crushing boulder barrages using smoke flares for cover, slice through his escort titans, and slay the Beast Titan!`,
     objectives: ['Gallop on horseback in Erwin\'s charge [H]', 'Dodge supersonic boulder artillery volleys', 'Eliminate escort titans and defeat the Beast Titan'],
     ranks: [28000, 18000, 10000], outro: 'The Beast\'s artillery has been silenced. The charge succeeded!' },
-  { id: 'story_reclamation', name: 'Wall Maria Reclaimed', sub: 'Chapter V · The Last Stand', art: 'title.jpg', time: 0.18,
-    spawn: { x: 0, y: WALL_TOP + 1.2, z: -55, yaw: 0 },
-    brief: `The final stand for humanity! The enemy Shifters make a desperate united attack at the Outer Gate to stop us from sealing Wall Maria! <b>Fight alongside the Scout Regiment or as the Attack Titan [T]</b>, eliminate the Shifters, and permanently seal the gate breach! Today, humanity reclaims its freedom!`,
-    objectives: ['Defeat both the Armored Titan and Beast Titan at the breach', 'Protect the Wall Maria gate', 'Reclaim Wall Maria for humanity'],
-    ranks: [35000, 22000, 12000], outro: 'Wall Maria has been reclaimed! The ocean awaits beyond the horizon!' },
-  // ---- OUR OWN DEDICATED MODES ----
+  { id: 'story_reclamation', name: 'Wall Rose Reclaimed', sub: 'Chapter V · The Last Stand', art: 'title.jpg', time: 0.18,
+    spawn: { x: 0, y: WALL_TOP + 1.2, z: 196, yaw: 0 },
+    brief: `The decisive battle for humanity! The enemy Shifters make a desperate united attack at the Trost breach to overrun humanity! <b>Fight alongside the Scout Regiment or as the Attack Titan [T]</b>, eliminate both Reiner and Zeke, and permanently seal the breach! Today, humanity reclaims its freedom!`,
+    objectives: ['Defeat both the Armored Titan and Beast Titan at the breach', 'Protect the Wall Rose gate', 'Reclaim the territory for humanity'],
+    ranks: [35000, 22000, 12000], outro: 'Wall Rose has been reclaimed! The territory is secure!' },
+  // ---- DEDICATED TRAINING & SANDBOX MODES ----
   { id: 'practice', name: 'Practice Ground', sub: 'Mastery Yard · Vector Gear, Cavalry & Titan Combat', art: 'm1.jpg', time: 0.12,
-    spawn: { x: 0, y: WALL_TOP + 1.2, z: -55, yaw: 0 },
-    brief: `Welcome to the Scout Regiment Practice Ground. Here you can train on your <b>Military Steed (press H to mount/whistle)</b>, practice aerial grappling, test your blade cuts on wooden dummies, and press <b>[T]</b> to transform into your Titan Shifter form.`,
+    spawn: { x: -48, y: GROUND + 1.2, z: -68, yaw: 0 },
+    brief: `Welcome to the Scout Regiment Practice Ground in Wall Sina. Here you can train on your <b>Military Steed (press H to mount/whistle)</b>, practice aerial grappling on high tether poles, test your blade cuts on wooden dummies, and press <b>[T]</b> to test your Titan Shifter transformation.`,
     objectives: ['Ride your military horse [H]', 'Grapple to tether poles and practice flight', 'Slash the training dummy nape', 'Press [T] to test Titan Shifter combat'],
     ranks: [6000, 4000, 2000], outro: 'Practice complete. You are ready for the battlefield.' },
-  { id: 'expedition', name: 'Scout Expedition', sub: 'Wall Maria Sandbox · Endless Battle & Roam', art: 'title.jpg', time: 0.14,
-    spawn: { x: 0, y: WALL_TOP + 1.2, z: -55, yaw: 0 },
-    brief: `Take to the field with your squadron. Roam the Shiganshina canals, outer scorched plains, and colossal wall ramparts. <b>Ride on horseback with [H]</b>, eliminate roaming Titans of all sizes, and transform into any Titan Shifter at will with <b>[T]</b>.`,
-    objectives: ['Roam Shiganshina and outer battlefield on horseback [H]', 'Slay roaming Titans of all sizes', 'Press [T] to transform into Titan form at will'],
+  { id: 'expedition', name: 'Scout Expedition', sub: 'Open World Sandbox · Endless Battle & Roam', art: 'title.jpg', time: 0.14,
+    spawn: { x: 0, y: WALL_TOP + 1.2, z: 12, yaw: 0 },
+    brief: `Take to the open world with your squadron. Roam Wall Sina Royal Capital, the Grand Highway, the Giant Pine Forest, Dauper Village, Utgard Castle ruins, and the breached Wall Rose. <b>Ride on horseback with [H]</b>, eliminate roaming Titans of all sizes, and transform into any Titan Shifter at will with <b>[T]</b>.`,
+    objectives: ['Roam the open world on horseback [H]', 'Slay roaming Titans of all sizes', 'Press [T] to transform into Titan form at will'],
     ranks: [50000, 25000, 10000], outro: 'Scouts return from the expedition.' }
 ];
 
@@ -92,47 +92,46 @@ class Markers {
 }
 export const markers = new Markers();
 
-/* ---------------------------------------------------------------- rings */
-const ringGeo = new THREE.TorusGeometry(3.6, 0.32, 8, 40);
-function makeRing(pos, next) {
-  const mat = new THREE.MeshBasicMaterial({ color: 0xffd36a, transparent: true, opacity: 0.9, depthWrite: false });
-  const m = new THREE.Mesh(ringGeo, mat); m.position.copy(pos);
-  const glow = new THREE.Mesh(new THREE.CircleGeometry(3.3, 32), new THREE.MeshBasicMaterial({ color: 0xffe9a0, transparent: true, opacity: 0.12, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }));
-  m.add(glow);
-  scene.add(m);
-  const r = { m, mat, glow, pos: m.position, n: V(0, 0, 1), done: false, checked: false };
-  if (next) r.n.subVectors(next, pos).normalize();
-  m.lookAt(_v.copy(pos).add(r.n));
-  return r;
-}
-function nudgeRing(r) {
-  if (r.checked || !chunkReady(Math.floor(r.pos.x), Math.floor(r.pos.z))) return;
-  const free = () => { for (let y = -3; y <= 3; y++) for (let z = -3; z <= 3; z++) for (let x = -3; x <= 3; x++) if (x * x + y * y + z * z <= 12 && SOLID[getBlock(Math.floor(r.pos.x) + x, Math.floor(r.pos.y) + y, Math.floor(r.pos.z) + z)]) return false; return true; };
-  for (let i = 0; i < 10 && !free(); i++) r.pos.y += 3;
-  r.checked = true;
-}
-function passRing(r, prev, cur) {
-  // segment prev→cur crossing the ring plane within its radius
-  prev = _p1.copy(prev); prev.y += 1; cur = _p2.copy(cur); cur.y += 1;
-  const a = _v.subVectors(prev, r.pos).dot(r.n), b = _w.subVectors(cur, r.pos).dot(r.n);
-  if (Math.abs(cur.x - r.pos.x) + Math.abs(cur.z - r.pos.z) > 30) return false;
-  if ((a > 0) === (b > 0) && Math.abs(b) > 0.6) return false;
-  const t = Math.abs(a) / (Math.abs(a) + Math.abs(b) || 1);
-  const p = V().lerpVectors(prev, cur, t);
-  return p.distanceTo(r.pos) < 4.5;
-}
-
 /* ---------------------------------------------------------------- civilians */
 const CIV_PALS = [
-  { shirt: [180, 60, 60], pants: [70, 60, 90], hair: [60, 40, 20] }, { shirt: [70, 120, 170], pants: [90, 80, 60], hair: [200, 170, 90] },
-  { shirt: [210, 180, 90], pants: [60, 70, 60], hair: [30, 25, 20] }, { shirt: [120, 160, 90], pants: [80, 60, 50], hair: [120, 60, 30] },
+  { shirt: [180, 60, 60], pants: [70, 60, 90], hair: [60, 40, 20] },
+  { shirt: [70, 120, 170], pants: [90, 80, 60], hair: [200, 170, 90] },
+  { shirt: [210, 180, 90], pants: [60, 70, 60], hair: [30, 25, 20] },
+  { shirt: [120, 160, 90], pants: [80, 60, 50], hair: [120, 60, 30] },
   { shirt: [160, 110, 170], pants: [50, 50, 70], hair: [90, 60, 40] }
 ];
+let activeCivilians = [];
+function clearCivilians() {
+  for (const c of activeCivilians) {
+    if (c.R && c.R.root) scene.remove(c.R.root);
+  }
+  activeCivilians.length = 0;
+}
 function makeCivilian(x, y, z, i) {
   const pal = CIV_PALS[i % CIV_PALS.length];
   const R = buildPerson({ shirt: pal.shirt, pants: pal.pants, hair: pal.hair, skin: [226 - i * 8, 184 - i * 6, 150 - i * 4], boot: [70, 50, 35] }, { uniform: false, cape: false, longHair: i % 2 === 1 });
   R.root.scale.setScalar(1.75 / 32); R.root.position.set(x, y, z); scene.add(R.root);
   return { R, pos: V(x, y, z), done: false, lost: false, threat: 0, t: Math.random() * 6, fade: 0 };
+}
+function spawnDeparturePlazaCitizens() {
+  clearCivilians();
+  // 16 cheering citizens lining the departure avenue in Ehrmich District (z from -20 to 8)
+  for (let i = 0; i < 16; i++) {
+    const side = (i % 2 === 0) ? -7.5 : 7.5;
+    const z = -20 + i * 2.1;
+    const c = makeCivilian(side + (Math.random() - 0.5) * 1.2, GROUND + 1, z, i);
+    c.R.root.lookAt(0, GROUND + 1, z);
+    activeCivilians.push(c);
+  }
+}
+function triggerDepartureFanfare(api) {
+  spawnDeparturePlazaCitizens();
+  // Green signal flares shoot high from Wall Sina South Ramparts
+  flare(V(-14, WALL_TOP + 2, 14), [0.2, 1, 0.4]);
+  flare(V(14, WALL_TOP + 2, 14), [0.2, 1, 0.4]);
+  Sfx.fanfare();
+  addShake(0.5);
+  api.bigMsg('OPERATION ADVANCE!', '57th Expedition beyond Wall Sina begins!', '#7dffb0', 3.5);
 }
 
 /* ---------------------------------------------------------------- helpers */
@@ -143,7 +142,6 @@ function flare(p, color = [0.4, 1, 0.5]) {
   for (let i = 0; i < 40; i++) sparks.spawn(p.x, p.y + 1, p.z, (Math.random() - 0.5) * 3, 18 + Math.random() * 12, (Math.random() - 0.5) * 3, 1.2 + Math.random() * 0.6, 0.6, 0.2, color[0], color[1], color[2], 1, 9, 0.6);
   for (let i = 0; i < 16; i++) steam.spawn(p.x, p.y + 2 + i * 1.5, p.z, (Math.random() - 0.5), 2, (Math.random() - 0.5), 4, 1, 3, color[0] * 0.6 + 0.4, color[1] * 0.6 + 0.4, color[2] * 0.6 + 0.4, 0.5, -0.5, 0.5);
 }
-function napeHint(api) { api.say('Remember — <b>only the nape</b> kills. Get behind it, build speed, and press <b>F</b>. Slashing an ankle drops a titan to its knees.', 7); }
 
 /* =========================================================================
    Mission logic
@@ -152,24 +150,26 @@ export const Missions = {
   /* ------------------------------------------------------------ story Chapter I */
   story_shiganshina() {
     return {
-      titans: [], targetCount: 5, killed: 0, secured: false, gateBeacon: null,
+      titans: [], targetCount: 6, killed: 0, secured: false, gateBeacon: null,
       start(api) {
         this.api = api;
         markers.clear();
         clearHorses();
-        const P = G.player;
-        spawnHorse(P.pos.x - 3, P.pos.z, { yaw: P.yaw, y: P.pos.y });
+        // Steed waits at the base of the wall rampart on the departure avenue
+        spawnHorse(0, 0, { yaw: 0, y: GROUND + 1 });
+        triggerDepartureFanfare(api);
 
-        api.setObjective('Chapter I · The Silent District', 'Eliminate 6 roaming Titans and secure the Outer Gate');
-        api.say('Commander Erwin: <i>"Scouts — Shiganshina is quiet, but aggressive Titans roam the canal banks and avenue. <b>Ride on horseback [H]</b>, eliminate 6 roaming Titans, and secure our forward camp at the gate."</i>', 9);
+        api.setObjective('Chapter I · Departure from Wall Sina', 'Ride south, eliminate 6 Titans in Trost, and secure the breach');
+        api.say('Commander Erwin: <i>"Scouts — the gates of Wall Sina are opening! Citizens are cheering for our victory. <b>Leap down with your ODM gear or mount your military steed [H]</b>, charge south along the Grand Highway, eliminate 6 invading Pure Titans in Trost District, and secure the breached Outer Gate!"</i>', 12);
 
+        // Titans roaming in Trost District ruins and southern approaches
         const spawns = [
-          { type: 'runt', x: -18, z: -20 },
-          { type: 'strider', x: -4, z: -5 },
-          { type: 'abnormal', x: 20, z: 10 },
-          { type: 'strider', x: -25, z: 22 },
-          { type: 'abnormal', x: 26, z: 35 },
-          { type: 'brute', x: 0, z: 52 }
+          { type: 'runt', x: -16, z: 175 },
+          { type: 'strider', x: 12, z: 185 },
+          { type: 'abnormal', x: -18, z: 205 },
+          { type: 'strider', x: 15, z: 215 },
+          { type: 'abnormal', x: -10, z: 228 },
+          { type: 'brute', x: 0, z: 238 }
         ];
         this.titans = spawns.map(s => {
           const t = api.spawnTitan(s.type, s.x, s.z, { alert: true, yaw: Math.random() * 6, team: 'enemy_titans' });
@@ -183,7 +183,7 @@ export const Missions = {
         const alive = this.titans.filter(t => t.alive).length;
         this.killed = this.targetCount - alive;
         if (!this.secured) {
-          this.api.setProgress(`Titans eliminated: <b>${this.killed}</b> / ${this.targetCount}`);
+          this.api.setProgress(`Titans eliminated: <b>${this.killed}</b> / ${this.targetCount} · Travel south to Wall Rose`);
         }
       },
       update(dt, api) {
@@ -202,23 +202,23 @@ export const Missions = {
         const alive = this.titans.filter(t => t.alive).length;
         if (alive === 0 && !this.secured) {
           this.secured = true;
-          api.bigMsg('DISTRICT CLEARED', 'Advance to the breached Outer Gate!', '#7dffb0', 3.0);
-          api.say('Commander Erwin: <i>"The canal and avenue are clear! All Scouts, regroup at the Outer Gate breach and ignite green flares!"</i>', 9);
+          api.bigMsg('TROST CLEARED', 'Advance to the breached Outer Gate!', '#7dffb0', 3.0);
+          api.say('Commander Erwin: <i>"Trost District is cleared! All Scouts, regroup at the Outer Gate breach and ignite green flares!"</i>', 9);
           Sfx.horn();
-          const gatePos = V(0, GROUND + 1, DR - 6);
+          const gatePos = V(0, GROUND + 1, 246);
           this.gateBeacon = markers.add(gatePos, 'GATE BREACH', 'goal edge');
-          api.setProgress('Advance to the <b>Outer Gate breach</b> to secure forward camp');
+          api.setProgress('Advance to the <b>Trost Outer Gate breach</b> to secure forward camp');
         }
         if (this.secured && this.gateBeacon) {
           const P = G.player;
-          if (P.pos.distanceTo(this.gateBeacon.pos) < 9) {
+          if (P.pos.distanceTo(this.gateBeacon.pos) < 12) {
             flare(this.gateBeacon.pos, [0.2, 1, 0.4]);
             Sfx.fanfare();
-            api.bigMsg('CAMP SECURED', 'Forward base established at Wall Maria', '#7dffb0', 3);
+            api.bigMsg('CAMP SECURED', 'Forward base established at Wall Rose breach', '#7dffb0', 3.5);
             api.complete({
               msg: 'Chapter I Cleared: Forward Camp Secured!',
               bonus: 5000,
-              extra: `<div><b>5 / 5</b><span>Titans Slain</span></div>`
+              extra: `<div><b>6 / 6</b><span>Titans Slain</span></div>`
             });
             markers.clear();
             this.gateBeacon = null;
@@ -226,7 +226,7 @@ export const Missions = {
         }
         markers.update();
       },
-      cleanup() { markers.clear(); }
+      cleanup() { markers.clear(); clearCivilians(); }
     };
   },
 
@@ -238,24 +238,24 @@ export const Missions = {
         this.api = api;
         markers.clear();
         clearHorses();
-        const P = G.player;
-        spawnHorse(P.pos.x - 3, P.pos.z, { yaw: P.yaw, y: P.pos.y });
+        spawnHorse(0, 0, { yaw: 0, y: GROUND + 1 });
+        triggerDepartureFanfare(api);
 
-        api.setObjective('Chapter II · The Iron Fortress', 'Defeat the Armored Titan (Reiner)');
-        const b = this.boss = api.spawnTitan('armored', 0, 22, {
+        api.setObjective('Chapter II · The Iron Fortress', 'Defeat the Armored Titan (Reiner) in Trost ruins');
+        const b = this.boss = api.spawnTitan('armored', 0, 222, {
           yaw: Math.PI,
           name: 'Armored Titan (Reiner)',
-          aggroR: 90,
+          aggroR: 120,
           team: 'enemy_titans'
         });
         attachKit(b);
         api.setBoss(b);
-        api.say('Commander Erwin: <i>"The Armored Titan ambushes from the ruins! His armor turns ordinary blades — strike his glowing knees or press <b>[T]</b> to transform into the Attack Titan and brawl him!"</i>', 9);
-        api.bigMsg('ARMORED AMBUSH', 'Reiner Braun attacks', '#ff9a40', 2.8);
+        api.say('Commander Erwin: <i>"The Armored Titan ambushes at the Trost District ruins! Gallop south on horseback [H], strike his glowing knees, or press <b>[T]</b> to transform into the Attack Titan and brawl him!"</i>', 12);
+        api.bigMsg('ARMORED AMBUSH', 'Reiner Braun attacks at Wall Rose', '#ff9a40', 3.0);
         Sfx.horn();
         this.mkKneeR = markers.add(V(), 'KNEE', 'danger');
         this.mkKneeL = markers.add(V(), 'KNEE', 'danger');
-        this.mkNape = markers.add(V(), 'NAPE', 'goal');
+        this.mkNape = markers.add(V(), 'NAPE', 'goal edge');
         Music.target = 1;
       },
       update(dt, api) {
@@ -272,12 +272,13 @@ export const Missions = {
           api.setProgress(`Armored Titan HP: <b style="color:#ff9a40">${Math.ceil(b.hp)} / ${b.hpMax}</b> · Press <b>[T]</b> for Titan Form`);
         } else if (!this.done) {
           this.done = true;
+          b.hp = 0;
           if (b.alive) b.kill({ by: 'hp_depleted' });
           api.setBoss(null);
           markers.clear();
-          steamBurst(b.pos.clone().add(V(0, 6, 0)), 120, 10, 6, 18, 3, 2);
+          steamBurst(b.pos.clone().add(V(0, 6, 0)), 150, 12, 8, 20, 3.5, 2);
           Sfx.fanfare();
-          api.bigMsg('ARMOR SHATTERED', 'Reiner forced into retreat!', '#ffd36a', 3);
+          api.bigMsg('ARMOR SHATTERED', 'Reiner forced into retreat!', '#ffd36a', 3.5);
           api.complete({
             msg: 'Chapter II Cleared: Armored Titan Repelled!',
             bonus: 9000,
@@ -286,7 +287,7 @@ export const Missions = {
         }
         markers.update();
       },
-      cleanup() { markers.clear(); this.api && this.api.setBoss(null); }
+      cleanup() { markers.clear(); clearCivilians(); this.api && this.api.setBoss(null); }
     };
   },
 
@@ -298,20 +299,20 @@ export const Missions = {
         this.api = api;
         markers.clear();
         clearHorses();
-        const P = G.player;
-        spawnHorse(P.pos.x - 3, P.pos.z, { yaw: P.yaw, y: P.pos.y });
+        spawnHorse(0, 0, { yaw: 0, y: GROUND + 1 });
+        triggerDepartureFanfare(api);
 
-        api.setObjective('Chapter III · The God of Destruction', 'Defeat the 34m Colossal Titan atop Wall Maria');
-        const b = this.boss = api.spawnTitan('colossal', 0, DR - 4, {
+        api.setObjective('Chapter III · The God of Destruction', 'Defeat the 34m Colossal Titan atop Wall Rose');
+        const b = this.boss = api.spawnTitan('colossal', 0, 240, {
           yaw: Math.PI,
           name: 'Colossal Titan (Bertholdt)',
-          aggroR: 120,
+          aggroR: 150,
           team: 'enemy_titans'
         });
         attachKit(b);
         api.setBoss(b);
-        api.say('Hange Zoe: <i>"The Colossal Titan is venting boiling steam! Do not grapple while the steam vents are roaring! Scale the ramparts, wait for cooling, and strike the nape!"</i>', 9);
-        api.bigMsg('COLOSSAL TITAN', 'The God of Destruction atop Wall Maria', '#ff4433', 3.2);
+        api.say('Hange Zoe: <i>"The Colossal Titan has manifested atop Wall Rose! Gallop south, scale the high ramparts, evade the boiling steam blasts, and strike the nape between steam vents!"</i>', 12);
+        api.bigMsg('COLOSSAL TITAN', 'The God of Destruction atop Wall Rose', '#ff4433', 3.5);
         Sfx.siren();
         addShake(1.2);
         this.mkNape = markers.add(V(), 'NAPE', 'goal edge');
@@ -320,7 +321,7 @@ export const Missions = {
       update(dt, api) {
         const b = this.boss;
         if (!b) return;
-        if (b.alive) {
+        if (b.alive && b.hp > 0) {
           b.napeWorld(this.mkNape.pos);
           this.steamCooldown -= dt;
           if (!this.isSteaming && this.steamCooldown <= 0) {
@@ -352,11 +353,13 @@ export const Missions = {
           api.setProgress(`Colossal Titan HP: <b style="color:#ff6050">${Math.ceil(b.hp)} / ${b.hpMax}</b> · ${status}`);
         } else if (!this.done) {
           this.done = true;
+          b.hp = 0;
+          if (b.alive) b.kill({ by: 'hp_depleted' });
           api.setBoss(null);
           markers.clear();
           steamBurst(b.pos.clone().add(V(0, 16, 0)), 300, 24, 18, 40, 5, 3);
           Sfx.fanfare();
-          api.bigMsg('COLOSSAL DEFEATED', 'The titan collapses from the wall!', '#ffd36a', 3.5);
+          api.bigMsg('COLOSSAL DEFEATED', 'The titan collapses from Wall Rose!', '#ffd36a', 3.5);
           api.complete({
             msg: 'Chapter III Cleared: The Colossal Titan Defeated!',
             bonus: 14000,
@@ -365,7 +368,7 @@ export const Missions = {
         }
         markers.update();
       },
-      cleanup() { markers.clear(); this.api && this.api.setBoss(null); }
+      cleanup() { markers.clear(); clearCivilians(); this.api && this.api.setBoss(null); }
     };
   },
 
@@ -377,29 +380,29 @@ export const Missions = {
         this.api = api;
         markers.clear();
         clearHorses();
-        const P = G.player;
-        spawnHorse(P.pos.x - 3, P.pos.z, { yaw: P.yaw, y: P.pos.y });
+        spawnHorse(0, 0, { yaw: 0, y: GROUND + 1 });
+        triggerDepartureFanfare(api);
 
         api.setObjective('Chapter IV · The Final Charge', 'Survive supersonic boulder artillery and defeat the Beast Titan (Zeke)');
-        const b = this.boss = api.spawnTitan('beast', 0, 42, {
+        const b = this.boss = api.spawnTitan('beast', 0, 275, {
           yaw: Math.PI,
           name: 'Beast Titan (Zeke)',
-          aggroR: 150,
+          aggroR: 160,
           team: 'enemy_titans'
         });
         attachKit(b);
         api.setBoss(b);
         this.escorts = [
-          api.spawnTitan('strider', -18, 22, { yaw: Math.PI, alert: true, team: 'enemy_titans' }),
-          api.spawnTitan('brute', 0, 26, { yaw: Math.PI, alert: true, team: 'enemy_titans' }),
-          api.spawnTitan('abnormal', 18, 24, { yaw: Math.PI, alert: true, team: 'enemy_titans' })
+          api.spawnTitan('strider', -24, 250, { yaw: Math.PI, alert: true, team: 'enemy_titans' }),
+          api.spawnTitan('brute', 0, 255, { yaw: Math.PI, alert: true, team: 'enemy_titans' }),
+          api.spawnTitan('abnormal', 24, 250, { yaw: Math.PI, alert: true, team: 'enemy_titans' })
         ];
         this.escorts.forEach((t) => {
           t.mk = markers.add(t.pos, 'ESCORT', 'danger');
         });
         this.mkBoss = markers.add(b.pos, 'BEAST TITAN', 'goal edge');
-        api.say('Commander Erwin: <i>"Scouts, charge across the plains! The Beast Titan hurls crushed boulders at supersonic speeds — ride your horses [H], use ruins for cover, launch green smoke flares, cut down his escorts, and take his head!"</i>', 10);
-        api.bigMsg('THE FINAL CHARGE', 'Dodge supersonic boulder artillery!', '#ff4433', 3.2);
+        api.say('Commander Erwin: <i>"Scouts, charge across the plains! The Beast Titan stands outside Wall Rose hurling crushed boulders at supersonic speeds — ride your horses [H], dodge the volleys, cut down his escorts, and take his head!"</i>', 12);
+        api.bigMsg('THE FINAL CHARGE', 'Dodge supersonic boulder artillery!', '#ff4433', 3.5);
         Sfx.horn();
         Music.target = 1;
       },
@@ -433,6 +436,7 @@ export const Missions = {
           api.setProgress(`Beast Titan HP: <b style="color:#ff6050">${Math.ceil(b.hp)} / ${b.hpMax}</b> · Escorts: <b>${escortsAlive}</b>`);
         } else if (!this.done) {
           this.done = true;
+          b.hp = 0;
           if (b.alive) b.kill({ by: 'hp_depleted' });
           api.setBoss(null);
           markers.clear();
@@ -447,7 +451,7 @@ export const Missions = {
         }
         markers.update();
       },
-      cleanup() { markers.clear(); this.api && this.api.setBoss(null); }
+      cleanup() { markers.clear(); clearCivilians(); this.api && this.api.setBoss(null); }
     };
   },
 
@@ -459,29 +463,29 @@ export const Missions = {
         this.api = api;
         markers.clear();
         clearHorses();
-        const P = G.player;
-        spawnHorse(P.pos.x - 3, P.pos.z, { yaw: P.yaw, y: P.pos.y });
+        spawnHorse(0, 0, { yaw: 0, y: GROUND + 1 });
+        triggerDepartureFanfare(api);
 
-        api.setObjective('Chapter V · The Last Stand', 'Defeat both the Armored Titan & Beast Titan to seal Wall Maria');
-        const arm = this.bossArmored = api.spawnTitan('armored', 0, 18, {
+        api.setObjective('Chapter V · The Last Stand', 'Defeat both Armored & Beast Titans to seal Wall Rose');
+        const arm = this.bossArmored = api.spawnTitan('armored', 0, 225, {
           yaw: Math.PI,
           name: 'Armored Titan',
-          aggroR: 100,
+          aggroR: 120,
           team: 'enemy_titans'
         });
         attachKit(arm);
-        const bst = this.bossBeast = api.spawnTitan('beast', 0, 42, {
+        const bst = this.bossBeast = api.spawnTitan('beast', 0, 255, {
           yaw: Math.PI,
           name: 'Beast Titan',
-          aggroR: 120,
+          aggroR: 140,
           team: 'enemy_titans'
         });
         attachKit(bst);
         api.setBoss(arm);
         this.mkArm = markers.add(arm.pos, 'ARMORED', 'danger edge');
         this.mkBst = markers.add(bst.pos, 'BEAST', 'danger edge');
-        api.say('Captain Levi: <i>"This is it. Humanity\'s decisive battle. Reiner and Zeke are holding the district avenue. Slay both Shifters so we can seal Wall Maria forever! Press [T] to transform into the Attack Titan and crush them!"</i>', 12);
-        api.bigMsg('THE LAST STAND', 'Reclaim Wall Maria for Humanity!', '#ffd36a', 3.5);
+        api.say('Captain Levi: <i>"This is it. Humanity\'s decisive battle. Reiner and Zeke are holding the Trost breach. Slay both Shifters so we can seal Wall Rose forever! Press [T] to transform into the Attack Titan and crush them!"</i>', 12);
+        api.bigMsg('THE LAST STAND', 'Reclaim Wall Rose for Humanity!', '#ffd36a', 3.5);
         Sfx.horn();
         Music.target = 1;
       },
@@ -503,27 +507,28 @@ export const Missions = {
           api.setProgress(`Armored: <b style="color:${armAlive ? '#ff9a40' : '#888'}">${armAlive ? Math.ceil(arm.hp) : 'FALLEN'}</b> · Beast: <b style="color:${bstAlive ? '#ff6050' : '#888'}">${bstAlive ? Math.ceil(bst.hp) : 'FALLEN'}</b>`);
         } else if (!this.done) {
           this.done = true;
+          arm.hp = 0; bst.hp = 0;
           if (arm.alive) arm.kill({ by: 'hp_depleted' });
           if (bst.alive) bst.kill({ by: 'hp_depleted' });
           api.setBoss(null);
           markers.clear();
-          spikeFx({ p: [0, GROUND + 1, DR], d: [0, 1] });
-          spikeFx({ p: [-4, GROUND + 1, DR], d: [0, 1] });
-          spikeFx({ p: [4, GROUND + 1, DR], d: [0, 1] });
-          flare(V(0, WALL_TOP + 2, DR), [0.2, 1, 0.4]);
-          flare(V(-15, WALL_TOP + 2, DR), [0.2, 1, 0.4]);
-          flare(V(15, WALL_TOP + 2, DR), [0.2, 1, 0.4]);
+          spikeFx({ p: [0, GROUND + 1, 246], d: [0, 1] });
+          spikeFx({ p: [-4, GROUND + 1, 246], d: [0, 1] });
+          spikeFx({ p: [4, GROUND + 1, 246], d: [0, 1] });
+          flare(V(0, WALL_TOP + 2, 246), [0.2, 1, 0.4]);
+          flare(V(-15, WALL_TOP + 2, 246), [0.2, 1, 0.4]);
+          flare(V(15, WALL_TOP + 2, 246), [0.2, 1, 0.4]);
           Sfx.fanfare();
-          api.bigMsg('WALL MARIA RECLAIMED!', 'Humanity has prevailed! The breach is sealed!', '#7dffb0', 4.5);
+          api.bigMsg('WALL ROSE RECLAIMED!', 'Humanity has prevailed! The breach is sealed!', '#7dffb0', 4.5);
           api.complete({
-            msg: 'CAMPAIGN COMPLETE: WALL MARIA HAS BEEN RECLAIMED!',
+            msg: 'CAMPAIGN COMPLETE: WALL ROSE HAS BEEN RECLAIMED!',
             bonus: 30000,
-            extra: `<div><b>VICTORY</b><span>Wall Maria Sealed</span></div>`
+            extra: `<div><b>VICTORY</b><span>Wall Rose Sealed</span></div>`
           });
         }
         markers.update();
       },
-      cleanup() { markers.clear(); this.api && this.api.setBoss(null); }
+      cleanup() { markers.clear(); clearCivilians(); this.api && this.api.setBoss(null); }
     };
   },
 
@@ -539,11 +544,11 @@ export const Missions = {
         // Spawn military horse right beside trainee
         spawnHorse(P.pos.x - 3, P.pos.z, { yaw: P.yaw, y: P.pos.y });
 
-        this.dummy = api.spawnTitan('dummy', -44, -34, { yaw: -0.12, passive: true });
-        this.mkDummy = markers.add(V(-44, GROUND + 7, -34), 'TRAINING NAPE', 'danger edge');
+        this.dummy = api.spawnTitan('dummy', -44, -58, { yaw: -0.12, passive: true });
+        this.mkDummy = markers.add(V(-44, GROUND + 7, -58), 'TRAINING NAPE', 'danger edge');
 
-        api.setObjective('Practice Ground', 'Train Cavalry, 3DMG & Titan Shifter Combat');
-        api.say('Commander Erwin: <i>"Welcome to the Scout Practice Ground, cadet. Your <b>military horse</b> is by your side — press <b>[H]</b> to whistle or mount. Practice aerial grappling on the tether poles, slash the training mannequin\'s nape (F), or press <b>[T]</b> to test your Titan Shifter transformation."</i>', 12);
+        api.setObjective('Practice Ground', 'Train Cavalry, 3DMG & Titan Shifter Combat in Wall Sina');
+        api.say('Commander Erwin: <i>"Welcome to the Scout Practice Ground in Wall Sina, cadet. Your <b>military horse</b> is by your side on the field — press <b>[H]</b> to whistle or mount. Practice aerial grappling on the tether poles, slash the training mannequin\'s nape (F), or press <b>[T]</b> to test your Titan Shifter transformation."</i>', 12);
         api.setProgress('Ride horse [H] · Grapple poles · Slash dummy nape (F) · Transform [T]');
       },
       onNapeHit(t) {
@@ -551,7 +556,7 @@ export const Missions = {
           this.api.bigMsg('PERFECT STRIKE', 'Deep cut delivered to target nape', '#ffd36a', 2.2);
           Sfx.fanfare();
           if (!this.runt) {
-            this.runt = this.api.spawnTitan('strider', -54, -22, { yaw: Math.PI, alert: true });
+            this.runt = this.api.spawnTitan('strider', -54, -48, { yaw: Math.PI, alert: true });
             this.runt.aggroR = 100;
             this.api.toast('A combat training Titan has entered the yard!', 3.0);
           }
@@ -579,19 +584,19 @@ export const Missions = {
         this.api = api;
         markers.clear();
         clearHorses();
-        const P = G.player;
-        spawnHorse(P.pos.x - 3, P.pos.z, { yaw: P.yaw, y: P.pos.y });
+        spawnHorse(0, 0, { yaw: 0, y: GROUND + 1 });
+        triggerDepartureFanfare(api);
 
-        api.setObjective('Scout Expedition', 'Endless battle across Shiganshina & outer plains');
-        api.say('Captain Levi: <i>"The expedition is underway. Ride across the canal avenues and outer scorched plains. Whistle your horse anytime with <b>[H]</b>, or transform into a Titan with <b>[T]</b>. Slay every Titan in sight."</i>', 10);
+        api.setObjective('Scout Expedition', 'Open-world battle across Wall Sina, Grand Field & Wall Rose');
+        api.say('Captain Levi: <i>"The expedition is underway. Ride across the Grand Highway, Giant Pine Forest, and Wall Rose ruins. Whistle your horse anytime with <b>[H]</b>, or transform into a Titan with <b>[T]</b>. Slay every Titan in sight."</i>', 10);
         api.setProgress('Expedition active · Press [H] for Horse · Press [T] for Titan Form');
       },
       update(dt, api) {
         this.t -= dt;
         const alive = aliveTitans();
-        if (this.t <= 0 && alive.length < 8) {
+        if (this.t <= 0 && alive.length < 9) {
           this.t = 4;
-          const P = G.player, a = Math.random() * Math.PI * 2, r = 60 + Math.random() * 45;
+          const P = G.player, a = Math.random() * Math.PI * 2, r = 70 + Math.random() * 50;
           let x = P.pos.x + Math.cos(a) * r, z = P.pos.z + Math.sin(a) * r;
           const types = ['runt', 'strider', 'strider', 'abnormal', 'brute'];
           api.spawnTitan(types[Math.floor(Math.random() * types.length)], x, z, { yaw: Math.random() * 6 });
@@ -599,7 +604,7 @@ export const Missions = {
         api.setProgress(`Titans nearby: <b>${alive.length}</b> · Slain: <b>${G.player.kills}</b> · [H] Horse · [T] Titan`);
         markers.update();
       },
-      cleanup() { markers.clear(); }
+      cleanup() { markers.clear(); clearCivilians(); }
     };
   }
 };

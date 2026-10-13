@@ -29,6 +29,9 @@ const ACTS = {
   attack: { label: 'SLASH', look: true, set: 'scout', down: () => api.press('KeyF') },
   swap: { label: 'BLADES', small: true, set: 'scout', down: () => api.press('KeyR') },
   use: { label: 'USE', small: true, set: 'scout', down: () => api.press('KeyE') },
+  horse: { label: 'HORSE', sub: 'MOUNT', small: true, set: 'scout', down: () => api.press('KeyH') },
+  titan: { label: 'TITAN', sub: 'SHIFT', small: true, down: () => api.press('KeyT') },
+  brake: { label: 'BRAKE', small: true, set: 'scout', hold: true, down: () => api.key('KeyG', true), up: () => api.key('KeyG', false) },
   swipe: { label: 'SWIPE', look: true, set: 'titan', down: () => api.press('Mouse0') },
   grab: { label: 'GRAB', look: true, set: 'titan', down: () => api.press('Mouse2') },
   guard: { label: 'GUARD', sub: 'NAPE', hold: true, set: 'titan', down: () => api.key('KeyC', true), up: () => api.key('KeyC', false) },
@@ -36,6 +39,7 @@ const ACTS = {
   q: { label: 'Q', ab: true, set: 'titan', down: () => api.press('KeyQ') },
   e: { label: 'E', ab: true, set: 'titan', down: () => api.press('KeyE') },
   r: { label: 'R', ab: true, set: 'titan', down: () => api.press('KeyR') },
+  map: { label: 'MAP', top: true, down: () => api.map ? api.map() : api.press('KeyM') },
   menu: { label: 'II', top: true, down: () => api.pause() },
   board: { label: 'SCORES', top: true, mp: true, down: () => api.board() },
   chat: { label: 'CHAT', top: true, mp: true, click: true, down: () => api.chat() },
@@ -179,12 +183,23 @@ export function touchFrame() {
   const playing = TOUCH.on && st.play;
   layer.style.display = playing ? 'block' : 'none';
   if (!playing) { if (ptrs.size) releaseAll(); return; }
-  const sig = `${st.titan ? 't' : 's'}|${st.mp}|${st.gunner}|${st.use}|${st.chat}`;
+  const sig = `${st.titan ? 't' : 's'}|${st.mp}|${st.gunner}|${st.use}|${st.chat}|${st.horse ? 'h1' : 'h0'}|${st.mounted ? 'm1' : 'm0'}`;
   if (sig !== lastSig) {
     lastSig = sig;
     layer.classList.toggle('titan', st.titan); layer.classList.toggle('mp', st.mp); layer.classList.toggle('use', st.use); layer.classList.toggle('chat', st.chat);
+    layer.classList.toggle('near-horse', !!st.horse);
     btns.attack.querySelector('.tbl').textContent = st.gunner ? 'FIRE' : 'SLASH';
     btns.swap.querySelector('.tbl').textContent = st.gunner ? 'RELOAD' : 'BLADES';
+    if (btns.horse) {
+      btns.horse.querySelector('.tbl').textContent = st.mounted ? 'DISMOUNT' : 'HORSE';
+      const sub = btns.horse.querySelector('.tbs');
+      if (sub) sub.textContent = st.mounted ? 'LEAP' : 'RIDE';
+    }
+    if (btns.titan) {
+      btns.titan.querySelector('.tbl').textContent = st.titan ? 'EJECT' : 'TITAN';
+      const sub = btns.titan.querySelector('.tbs');
+      if (sub) sub.textContent = st.titan ? 'HUMAN' : 'SHIFT';
+    }
     if (!st.titan) showHint();
   }
   if (st.titan) {
